@@ -26,6 +26,14 @@ class _ExerciseGuideScreenState extends State<ExerciseGuideScreen> {
     'Omuz',
     'Kol',
     'Core',
+    'HIIT',
+    'Yoga',
+    'Pilates',
+    'Kardiyovasküler',
+    'Esneklik',
+    'Fonksiyonel',
+    'Güç',
+    'Dayanıklılık',
   ];
 
   final List<String> _difficulties = [
