@@ -39,6 +39,7 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.3
+  firebase_storage: ^12.3.2
   
   # HTTP requests
   http: ^1.2.2
@@ -56,6 +57,7 @@ dependencies:
   camera: ^0.10.5+5
   path_provider: ^2.1.1
   permission_handler: ^11.0.1
+  file_picker: ^8.0.0+1
 
 dev_dependencies:
   flutter_test:

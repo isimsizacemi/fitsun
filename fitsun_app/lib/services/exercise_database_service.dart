@@ -608,4 +608,43 @@ class ExerciseDatabaseService {
         )
         .toList();
   }
+
+  // Egzersiz video URL'ini güncelle
+  static void updateExerciseVideo(String exerciseId, String videoUrl) {
+    final exercise = _exerciseDatabase.values
+        .where((e) => e.id == exerciseId)
+        .firstOrNull;
+    
+    if (exercise != null) {
+      // Yeni ExerciseDetail oluştur (immutable olduğu için)
+      final updatedExercise = ExerciseDetail(
+        id: exercise.id,
+        name: exercise.name,
+        description: exercise.description,
+        instructions: exercise.instructions,
+        videoUrl: videoUrl, // Video URL'ini güncelle
+        imageUrl: exercise.imageUrl,
+        muscleGroups: exercise.muscleGroups,
+        equipment: exercise.equipment,
+        difficulty: exercise.difficulty,
+        tips: exercise.tips,
+        commonMistakes: exercise.commonMistakes,
+        category: exercise.category,
+      );
+      
+      _exerciseDatabase[exercise.name] = updatedExercise;
+    }
+  }
+
+  // Egzersiz video URL'ini sil
+  static void removeExerciseVideo(String exerciseId) {
+    final exercise = _exerciseDatabase.values
+        .where((e) => e.id == exerciseId)
+        .firstOrNull;
+    
+    if (exercise != null) {
+      // Video URL'ini boş string yap
+      updateExerciseVideo(exerciseId, '');
+    }
+  }
 }

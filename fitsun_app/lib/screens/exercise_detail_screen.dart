@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 import '../models/exercise_detail.dart';
 import '../services/exercise_database_service.dart';
 import 'video_recording_screen.dart';
+import 'video_upload_screen.dart';
 
 class ExerciseDetailScreen extends StatefulWidget {
   final String exerciseName;
@@ -82,6 +83,22 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     }
   }
 
+  void _navigateToVideoUpload() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoUploadScreen(
+          exerciseId: widget.exerciseDetail?.id ?? widget.exerciseName,
+          exerciseName: widget.exerciseName,
+          existingVideoUrl: widget.exerciseDetail?.videoUrl,
+        ),
+      ),
+    ).then((_) {
+      // Video yükleme sayfasından dönüldüğünde sayfayı yenile
+      _loadExerciseDetail();
+    });
+  }
+
   @override
   void dispose() {
     _videoController?.dispose();
@@ -94,6 +111,11 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       appBar: AppBar(
         title: Text(widget.exerciseName),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.video_library),
+            onPressed: () => _navigateToVideoUpload(),
+            tooltip: 'Video Yükle',
+          ),
           IconButton(
             icon: const Icon(Icons.favorite_border),
             onPressed: () {
@@ -224,14 +246,28 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               const SizedBox(height: 8),
               const Text('Video yükleniyor...'),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _recordVideo,
-                icon: const Icon(Icons.videocam),
-                label: const Text('Video Çek'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _recordVideo,
+                    icon: const Icon(Icons.videocam),
+                    label: const Text('Video Çek'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _navigateToVideoUpload,
+                    icon: const Icon(Icons.upload),
+                    label: const Text('Video Yükle'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
