@@ -305,7 +305,25 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Spor Programı')),
+      appBar: AppBar(
+        title: const Text('Spor Programı'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            tooltip: 'Ana Sayfa',
+          ),
+          IconButton(
+            icon: const Icon(Icons.sports_gymnastics),
+            onPressed: () {
+              Navigator.pushNamed(context, '/exercise-guide');
+            },
+            tooltip: 'Egzersiz Rehberi',
+          ),
+        ],
+      ),
       body: _workoutProgram == null
           ? _buildGenerateScreen()
           : _buildProgramScreen(),

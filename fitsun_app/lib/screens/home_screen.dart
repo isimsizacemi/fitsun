@@ -213,6 +213,76 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 24),
 
+                  // Hızlı Erişim Kartları
+                  Text(
+                    'Hızlı Erişim',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Hızlı Erişim Grid
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1.2,
+                    children: [
+                      // Su Takibi Kartı
+                      _buildQuickAccessCard(
+                        context: context,
+                        title: 'Su Takibi',
+                        icon: Icons.water_drop,
+                        color: Colors.blue,
+                        onTap: () {
+                          // Su takibi ekranına git
+                          _showWaterTrackingDialog(context);
+                        },
+                      ),
+
+                      // Antrenman Takibi Kartı
+                      _buildQuickAccessCard(
+                        context: context,
+                        title: 'Antrenman',
+                        icon: Icons.fitness_center,
+                        color: Colors.orange,
+                        onTap: () {
+                          // Antrenman takibi ekranına git
+                          _showWorkoutTrackingDialog(context);
+                        },
+                      ),
+
+                      // Beslenme Takibi Kartı
+                      _buildQuickAccessCard(
+                        context: context,
+                        title: 'Beslenme',
+                        icon: Icons.restaurant,
+                        color: Colors.green,
+                        onTap: () {
+                          // Beslenme takibi ekranına git
+                          _showNutritionTrackingDialog(context);
+                        },
+                      ),
+
+                      // İstatistikler Kartı
+                      _buildQuickAccessCard(
+                        context: context,
+                        title: 'İstatistikler',
+                        icon: Icons.analytics,
+                        color: Colors.purple,
+                        onTap: () {
+                          // İstatistikler ekranına git
+                          _showStatisticsDialog(context);
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
                   // Programlarım Kısmı
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -562,5 +632,488 @@ class _HomeScreenState extends State<HomeScreen> {
       default:
         return location;
     }
+  }
+
+  // Hızlı Erişim Kartı Widget'ı
+  Widget _buildQuickAccessCard({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Su Takibi Dialog'u
+  void _showWaterTrackingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Su Takibi'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Su tüketiminizi takip edin ve hedeflerinize ulaşın!'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Su ekleme ekranına git
+                    _showAddWaterDialog(context);
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Su Ekle'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Su geçmişi ekranına git
+                    _showWaterHistoryDialog(context);
+                  },
+                  icon: const Icon(Icons.history),
+                  label: const Text('Geçmiş'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Antrenman Takibi Dialog'u
+  void _showWorkoutTrackingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Antrenman Takibi'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Antrenmanlarınızı kaydedin ve ilerlemenizi takip edin!',
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Yeni antrenman ekranına git
+                    _showNewWorkoutDialog(context);
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Antrenman'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Antrenman geçmişi ekranına git
+                    _showWorkoutHistoryDialog(context);
+                  },
+                  icon: const Icon(Icons.history),
+                  label: const Text('Geçmiş'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Beslenme Takibi Dialog'u
+  void _showNutritionTrackingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Beslenme Takibi'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Beslenme planınızı takip edin ve hedeflerinize ulaşın!',
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Beslenme ekleme ekranına git
+                    _showAddNutritionDialog(context);
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Yemek Ekle'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Beslenme geçmişi ekranına git
+                    _showNutritionHistoryDialog(context);
+                  },
+                  icon: const Icon(Icons.history),
+                  label: const Text('Geçmiş'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // İstatistikler Dialog'u
+  void _showStatisticsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('İstatistikler'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('İlerlemenizi ve başarılarınızı görün!'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Haftalık istatistikler ekranına git
+                    _showWeeklyStatsDialog(context);
+                  },
+                  icon: const Icon(Icons.calendar_view_week),
+                  label: const Text('Haftalık'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Aylık istatistikler ekranına git
+                    _showMonthlyStatsDialog(context);
+                  },
+                  icon: const Icon(Icons.calendar_month),
+                  label: const Text('Aylık'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Su Ekleme Dialog'u
+  void _showAddWaterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Su Ekle'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Ne kadar su içtiniz?'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('250ml su eklendi! 💧');
+                  },
+                  child: const Text('250ml'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('500ml su eklendi! 💧');
+                  },
+                  child: const Text('500ml'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('1000ml su eklendi! 💧');
+                  },
+                  child: const Text('1000ml'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Su Geçmişi Dialog'u
+  void _showWaterHistoryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Su Geçmişi'),
+        content: const Text('Su tüketim geçmişiniz burada görünecek.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Yeni Antrenman Dialog'u
+  void _showNewWorkoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Yeni Antrenman'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Hangi tür antrenman yaptınız?'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('Kardiyo antrenmanı kaydedildi! 🏃‍♂️');
+                  },
+                  icon: const Icon(Icons.directions_run),
+                  label: const Text('Kardiyo'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('Güç antrenmanı kaydedildi! 💪');
+                  },
+                  icon: const Icon(Icons.fitness_center),
+                  label: const Text('Güç'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Antrenman Geçmişi Dialog'u
+  void _showWorkoutHistoryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Antrenman Geçmişi'),
+        content: const Text('Antrenman geçmişiniz burada görünecek.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Beslenme Ekleme Dialog'u
+  void _showAddNutritionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Beslenme Ekle'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Hangi öğünü eklemek istiyorsunuz?'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('Kahvaltı eklendi! 🍳');
+                  },
+                  icon: const Icon(Icons.breakfast_dining),
+                  label: const Text('Kahvaltı'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('Öğle yemeği eklendi! 🍽️');
+                  },
+                  icon: const Icon(Icons.lunch_dining),
+                  label: const Text('Öğle'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showSuccessMessage('Akşam yemeği eklendi! 🍽️');
+                  },
+                  icon: const Icon(Icons.dinner_dining),
+                  label: const Text('Akşam'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Beslenme Geçmişi Dialog'u
+  void _showNutritionHistoryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Beslenme Geçmişi'),
+        content: const Text('Beslenme geçmişiniz burada görünecek.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Haftalık İstatistikler Dialog'u
+  void _showWeeklyStatsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Haftalık İstatistikler'),
+        content: const Text('Bu haftaki ilerlemeniz burada görünecek.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Aylık İstatistikler Dialog'u
+  void _showMonthlyStatsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Aylık İstatistikler'),
+        content: const Text('Bu ayki ilerlemeniz burada görünecek.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Başarı Mesajı Göster
+  void _showSuccessMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 }

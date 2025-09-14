@@ -439,6 +439,23 @@ Sadece JSON ver.
             print('=' * 80);
             print(generatedText);
             print('=' * 80);
+
+            // AI'dan gelen tam JSON'u ayrıca yazdır
+            print('📋 AI\'dan gelen TAM JSON:');
+            print('🔸 JSON başlangıcı:');
+            print(
+              generatedText.substring(
+                0,
+                generatedText.length > 1000 ? 1000 : generatedText.length,
+              ),
+            );
+            if (generatedText.length > 1000) {
+              print('🔸 JSON ortası:');
+              int middle = generatedText.length ~/ 2;
+              print(generatedText.substring(middle - 500, middle + 500));
+              print('🔸 JSON sonu:');
+              print(generatedText.substring(generatedText.length - 1000));
+            }
             print('📊 AI Yanıt Analizi:');
             print('  - Toplam karakter sayısı: ${generatedText.length}');
             print(
@@ -457,17 +474,17 @@ Sadece JSON ver.
             try {
               String cleanText = generatedText;
 
-              // Markdown kod bloklarını temizle
-              if (cleanText.startsWith('```json')) {
-                cleanText = cleanText.substring(7);
-              }
-              if (cleanText.startsWith('```')) {
-                cleanText = cleanText.substring(3);
-              }
-              if (cleanText.endsWith('```')) {
-                cleanText = cleanText.substring(0, cleanText.length - 3);
-              }
+              // Markdown kod bloklarını temizle - daha güçlü temizleme
+              cleanText = cleanText.replaceAll(RegExp(r'^```(?:json)?\s*'), '');
+              cleanText = cleanText.replaceAll(RegExp(r'\s*```$'), '');
               cleanText = cleanText.trim();
+
+              print('🧹 Markdown temizleme sonrası:');
+              print(
+                cleanText.length > 200
+                    ? cleanText.substring(0, 200) + '...'
+                    : cleanText,
+              );
 
               print('🔍 Temizleme öncesi JSON:');
               print(
@@ -504,12 +521,24 @@ Sadece JSON ver.
               print('🔍 Hata detayı:');
               print('  - Hata türü: ${e.runtimeType}');
               print('  - Hata mesajı: $e');
-              print('🔍 Raw AI yanıtı:');
-              print(
-                generatedText.length > 500
-                    ? generatedText.substring(0, 500) + '...'
-                    : generatedText,
-              );
+              print('🔍 Raw AI yanıtı (TAM):');
+              print('=' * 100);
+              print(generatedText);
+              print('=' * 100);
+
+              // JSON'u manuel olarak düzeltmeyi dene
+              print('🔧 Manuel JSON düzeltme deneniyor...');
+              String fixedJson = _manualJsonFix(generatedText);
+              if (fixedJson != generatedText) {
+                print('✅ Manuel düzeltme yapıldı, tekrar parsing deneniyor...');
+                try {
+                  final parsedData = jsonDecode(fixedJson);
+                  print('✅ Manuel düzeltme ile JSON parsing başarılı!');
+                  return parsedData;
+                } catch (e2) {
+                  print('❌ Manuel düzeltme de başarısız: $e2');
+                }
+              }
 
               // Fallback: Basit bir program oluştur
               print('🔄 Fallback program oluşturuluyor...');
@@ -602,6 +631,39 @@ Sadece JSON ver.
 
     print('✅ JSON yapısı tamamlandı');
     return jsonText;
+  }
+
+  // Manuel JSON düzeltme fonksiyonu
+  static String _manualJsonFix(String jsonText) {
+    print('🔧 Manuel JSON düzeltme başlatılıyor...');
+
+    // 1. Markdown kalıntılarını temizle
+    jsonText = jsonText.replaceAll(RegExp(r'^```(?:json)?\s*'), '');
+    jsonText = jsonText.replaceAll(RegExp(r'\s*```$'), '');
+
+    // 2. Satır sonlarını temizle
+    jsonText = jsonText.replaceAll('\n', ' ').replaceAll('\r', '');
+
+    // 3. Fazla boşlukları temizle
+    jsonText = jsonText.replaceAll(RegExp(r'\s+'), ' ');
+
+    // 4. JSON başlangıcını bul
+    int jsonStart = jsonText.indexOf('{');
+    if (jsonStart > 0) {
+      jsonText = jsonText.substring(jsonStart);
+    }
+
+    // 5. JSON sonunu bul ve kes
+    int lastBrace = jsonText.lastIndexOf('}');
+    if (lastBrace > 0) {
+      jsonText = jsonText.substring(0, lastBrace + 1);
+    }
+
+    // 6. Eksik parantezleri tamamla
+    jsonText = _completeJsonStructure(jsonText);
+
+    print('✅ Manuel JSON düzeltme tamamlandı');
+    return jsonText.trim();
   }
 
   // AI'nın verdiği geçersiz JSON formatlarını düzelt

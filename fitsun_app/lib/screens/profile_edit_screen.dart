@@ -309,6 +309,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       appBar: AppBar(
         title: const Text('Profil Düzenle'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            tooltip: 'Ana Sayfa',
+          ),
+          IconButton(
+            icon: const Icon(Icons.fitness_center),
+            onPressed: () {
+              Navigator.pushNamed(context, '/workout-program');
+            },
+            tooltip: 'Spor Programı',
+          ),
           TextButton(
             onPressed: _saveProfile,
             child: const Text(

@@ -121,6 +121,20 @@ class _ExerciseGuideScreenState extends State<ExerciseGuideScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            tooltip: 'Ana Sayfa',
+          ),
+          IconButton(
+            icon: const Icon(Icons.fitness_center),
+            onPressed: () {
+              Navigator.pushNamed(context, '/workout-program');
+            },
+            tooltip: 'Spor Programı',
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadExercises,
             tooltip: 'Yenile',

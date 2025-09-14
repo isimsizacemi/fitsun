@@ -139,4 +139,8 @@ class UserModel {
         fitnessLevel != null &&
         workoutLocation != null;
   }
+
+  factory UserModel.empty() {
+    return UserModel(id: '', email: '');
+  }
 }
