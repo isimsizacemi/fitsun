@@ -23,6 +23,7 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   final _experienceController = TextEditingController();
   final _weeklyFrequencyController = TextEditingController();
   final _preferredTimeController = TextEditingController();
+  final _customPromptController = TextEditingController();
 
   String? _selectedGoal;
   String? _selectedFitnessLevel;
@@ -52,11 +53,35 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
 
   final List<String> _fitnessLevelOptions = ['Başlangıç', 'Orta', 'İleri'];
 
+  final Map<String, String> _fitnessLevelValueMap = {
+    'Başlangıç': 'beginner',
+    'Orta': 'intermediate',
+    'İleri': 'advanced',
+  };
+
+  final Map<String, String> _fitnessLevelDisplayMap = {
+    'beginner': 'Başlangıç',
+    'intermediate': 'Orta',
+    'advanced': 'İleri',
+  };
+
   final List<String> _workoutLocationOptions = [
     'Ev',
     'Spor Salonu',
     'Açık Hava',
   ];
+
+  final Map<String, String> _workoutLocationValueMap = {
+    'Ev': 'home',
+    'Spor Salonu': 'gym',
+    'Açık Hava': 'outdoor',
+  };
+
+  final Map<String, String> _workoutLocationDisplayMap = {
+    'home': 'Ev',
+    'gym': 'Spor Salonu',
+    'outdoor': 'Açık Hava',
+  };
 
   final List<String> _equipmentOptions = [
     'Dambıl',
@@ -85,6 +110,7 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
     _experienceController.dispose();
     _weeklyFrequencyController.dispose();
     _preferredTimeController.dispose();
+    _customPromptController.dispose();
     super.dispose();
   }
 
@@ -100,9 +126,14 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
     _preferredTimeController.text = widget.userProfile.preferredTime ?? '';
 
     _selectedGoal =
-        _goalDisplayMap[widget.userProfile.goal] ?? widget.userProfile.goal;
-    _selectedFitnessLevel = widget.userProfile.fitnessLevel;
-    _selectedWorkoutLocation = widget.userProfile.workoutLocation;
+        _goalDisplayMap[widget.userProfile.goal] ??
+        (widget.userProfile.goal != null ? _goalOptions.first : null);
+    _selectedFitnessLevel =
+        _fitnessLevelDisplayMap[widget.userProfile.fitnessLevel] ??
+        _fitnessLevelOptions.first;
+    _selectedWorkoutLocation =
+        _workoutLocationDisplayMap[widget.userProfile.workoutLocation] ??
+        _workoutLocationOptions.first;
     _selectedEquipment = widget.userProfile.availableEquipment ?? [];
   }
 
@@ -170,15 +201,25 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
             _goalValueMap[_selectedGoal] ??
             _selectedGoal ??
             widget.userProfile.goal,
-        fitnessLevel: _selectedFitnessLevel ?? widget.userProfile.fitnessLevel,
+        fitnessLevel:
+            _fitnessLevelValueMap[_selectedFitnessLevel] ??
+            _selectedFitnessLevel ??
+            widget.userProfile.fitnessLevel,
         workoutLocation:
-            _selectedWorkoutLocation ?? widget.userProfile.workoutLocation,
+            _workoutLocationValueMap[_selectedWorkoutLocation] ??
+            _selectedWorkoutLocation ??
+            widget.userProfile.workoutLocation,
         availableEquipment: _selectedEquipment.isNotEmpty
             ? _selectedEquipment
             : widget.userProfile.availableEquipment,
       );
 
-      final program = await GeminiService.generateWorkoutProgram(updatedUser);
+      final program = await GeminiService.generateWorkoutProgram(
+        updatedUser,
+        customPrompt: _customPromptController.text.trim().isNotEmpty
+            ? _customPromptController.text.trim()
+            : null,
+      );
 
       if (program != null) {
         print('✅ Program başarıyla oluşturuldu!');
@@ -199,6 +240,14 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
       print('💥 Program oluşturma hatası: $e');
       if (e.toString().contains('TimeoutException')) {
         _showErrorSnackBar('⏰ AI yanıt vermedi (30s timeout). Tekrar deneyin.');
+      } else if (e.toString().contains('SocketException')) {
+        _showErrorSnackBar(
+          '🌐 İnternet bağlantısı hatası. Bağlantınızı kontrol edin.',
+        );
+      } else if (e.toString().contains('FormatException')) {
+        _showErrorSnackBar(
+          '📝 AI yanıtı işlenirken hata oluştu. Tekrar deneyin.',
+        );
       } else {
         _showErrorSnackBar('💥 Hata: ${e.toString()}');
       }
@@ -880,6 +929,29 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
                   checkmarkColor: Theme.of(context).colorScheme.primary,
                 );
               }).toList(),
+            ),
+            const SizedBox(height: 16),
+
+            // Özel Prompt Alanı
+            Text(
+              'Özel İstekler (Opsiyonel)',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _customPromptController,
+              decoration: const InputDecoration(
+                labelText: 'AI\'ya özel isteklerinizi yazın',
+                hintText:
+                    'Örn: Daha fazla kardiyo egzersizi, belirli kas gruplarına odaklan, vb.',
+                border: OutlineInputBorder(),
+                helperText:
+                    'Bu alan boş bırakılabilir. AI programı oluştururken bu istekleri dikkate alacaktır.',
+              ),
+              maxLines: 3,
+              maxLength: 500,
             ),
           ],
         ),

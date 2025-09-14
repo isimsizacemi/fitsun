@@ -7,9 +7,9 @@ import '../models/workout_program.dart';
 class GeminiService {
   // Google Gemini AI API URL - Güncel versiyon
   static const String _geminiApiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-  // API Key - yeni key
+  // API Key - güncellenmiş key
   static const String _apiKey = 'AIzaSyBgCodouEn4KYNqFCSLxDOFI-qNE62V8O4';
 
   // Kullanıcı profilini Firebase'e kaydet
@@ -45,7 +45,10 @@ class GeminiService {
   }
 
   // AI ile spor programı oluştur
-  static Future<WorkoutProgram?> generateWorkoutProgram(UserModel user) async {
+  static Future<WorkoutProgram?> generateWorkoutProgram(
+    UserModel user, {
+    String? customPrompt,
+  }) async {
     try {
       print('🔥 GeminiService: Program oluşturma başlatılıyor...');
 
@@ -56,7 +59,10 @@ class GeminiService {
 
       // Gemini AI ile spor programı oluştur
       print('🤖 Gemini AI ile program oluşturuluyor...');
-      final programData = await _generateWithGemini(user);
+      final programData = await _generateWithGemini(
+        user,
+        customPrompt: customPrompt,
+      );
       if (programData == null) {
         print('❌ Gemini AI\'dan veri alınamadı');
         return null;
@@ -306,8 +312,9 @@ class GeminiService {
 
   // Gemini AI ile spor programı oluştur
   static Future<Map<String, dynamic>?> _generateWithGemini(
-    UserModel user,
-  ) async {
+    UserModel user, {
+    String? customPrompt,
+  }) async {
     try {
       print('📝 Prompt oluşturuluyor...');
       final prompt =
@@ -329,27 +336,55 @@ Kullanıcı Profil Bilgileri:
 
 Bu detaylı kullanıcı profil bilgilerine göre ${user.weeklyFrequency ?? 3} günlük, kişiselleştirilmiş bir spor programı oluştur. Program, kullanıcının fiziksel özelliklerini, hedeflerini, mevcut ekipmanlarını ve deneyim seviyesini dikkate almalıdır.
 
-JSON:
+${customPrompt != null && customPrompt.isNotEmpty ? '''
+ÖNEMLİ ÖZEL İSTEKLER:
+$customPrompt
+
+Bu özel istekleri MUTLAKA dikkate al:
+- Eğer belirli bir günün boş kalması isteniyorsa, o günü "Dinlenme" olarak işaretle ve exercises listesini boş bırak []
+- Eğer belirli egzersizler isteniyorsa, sadece o egzersizleri ekle
+- Eğer belirli kas grupları odaklanılması isteniyorsa, sadece o kas gruplarına odaklan
+- Özel istekler profil bilgilerinden önceliklidir
+''' : ''}
+
+JSON Format (SADECE BU FORMATI KULLAN - SAYILAR TIRNAK İÇİNDE OLMASIN):
 {
-  "title": "Program",
-  "description": "Kişiselleştirilmiş spor programı",
+  "title": "Program Adı",
+  "description": "Program açıklaması",
   "duration": "1 hafta",
   "weeks": [{
     "weekNumber": 1,
-    "days": [{
-      "dayNumber": 1,
-      "dayName": "Gün 1",
-      "focus": "Göğüs",
-      "exercises": [{
-        "name": "Bench Press",
-        "sets": 3,
-        "reps": 10,
-        "restSeconds": 60
-      }],
-      "estimatedDuration": 45
-    }]
+    "days": [
+      {
+        "dayNumber": 1,
+        "dayName": "Pazartesi",
+        "focus": "Göğüs",
+        "exercises": [
+          {
+            "name": "Bench Press",
+            "sets": 3,
+            "reps": 10,
+            "restSeconds": 60
+          }
+        ],
+        "estimatedDuration": 45
+      },
+      {
+        "dayNumber": 2,
+        "dayName": "Salı",
+        "focus": "Dinlenme",
+        "exercises": [],
+        "estimatedDuration": 0
+      }
+    ]
   }]
 }
+
+ÖNEMLİ KURALLAR:
+- TÜM SAYILAR TIRNAK İÇİNDE OLMASIN: "sets": 3 (doğru), "sets": "3" (yanlış)
+- ARALIK KULLANMA: "reps": 8-12 (yanlış), "reps": 8 (doğru)
+- BOŞ GÜNLER: "exercises": [] (boş liste)
+- SADECE BU FORMATI KULLAN, BAŞKA FORMAT KULLANMA
 
 Sadece JSON ver.
 ''';
@@ -357,6 +392,10 @@ Sadece JSON ver.
       print('🌐 Gemini API\'ye istek gönderiliyor...');
       print('🔑 API Key: ${_apiKey.substring(0, 10)}...');
       print('📡 URL: $_geminiApiUrl');
+      print('📝 AI\'ya gönderilen prompt:');
+      print('=' * 80);
+      print(prompt);
+      print('=' * 80);
 
       final response = await http
           .post(
@@ -378,7 +417,7 @@ Sadece JSON ver.
               },
             }),
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(const Duration(seconds: 60));
 
       print('📊 Response Status: ${response.statusCode}');
       print('📄 Response Body Length: ${response.body.length}');
@@ -396,13 +435,29 @@ Sadece JSON ver.
               content['parts'].isNotEmpty) {
             final generatedText = content['parts'][0]['text'];
             print('📝 Generated Text Length: ${generatedText.length}');
+            print('🤖 AI\'dan gelen yanıt:');
+            print('=' * 80);
+            print(generatedText);
+            print('=' * 80);
+            print('📊 AI Yanıt Analizi:');
+            print('  - Toplam karakter sayısı: ${generatedText.length}');
             print(
-              '🔍 Generated Text Preview: ${generatedText.substring(0, 100)}...',
+              '  - JSON başlangıcı: ${generatedText.substring(0, generatedText.length > 100 ? 100 : generatedText.length)}...',
             );
+            print(
+              '  - JSON sonu: ...${generatedText.length > 100 ? generatedText.substring(generatedText.length - 100) : generatedText}',
+            );
+            print(
+              '  - Markdown kod bloğu var mı: ${generatedText.contains('```')}',
+            );
+            print('  - JSON başlıyor mu: ${generatedText.contains('{')}');
+            print('  - JSON bitiyor mu: ${generatedText.contains('}')}');
 
             // JSON parsing - markdown kod bloklarını temizle
             try {
               String cleanText = generatedText;
+
+              // Markdown kod bloklarını temizle
               if (cleanText.startsWith('```json')) {
                 cleanText = cleanText.substring(7);
               }
@@ -414,31 +469,73 @@ Sadece JSON ver.
               }
               cleanText = cleanText.trim();
 
+              print('🔍 Temizleme öncesi JSON:');
+              print(
+                cleanText.length > 300
+                    ? cleanText.substring(0, 300) + '...'
+                    : cleanText,
+              );
+
+              // AI'nın verdiği geçersiz formatları düzelt
+              cleanText = _fixAiJsonFormat(cleanText);
+
+              print('🔍 Format düzeltme sonrası JSON:');
+              print(
+                cleanText.length > 300
+                    ? cleanText.substring(0, 300) + '...'
+                    : cleanText,
+              );
+
+              // JSON'u tamamlamak için eksik parantezleri ekle
+              cleanText = _completeJsonStructure(cleanText);
+
+              print('🔍 Parantez tamamlama sonrası JSON:');
+              print(
+                cleanText.length > 300
+                    ? cleanText.substring(0, 300) + '...'
+                    : cleanText,
+              );
+
               final parsedData = jsonDecode(cleanText);
               print('✅ JSON parsing başarılı');
               return parsedData;
             } catch (e) {
               print('❌ JSON parsing hatası: $e');
-              print('🔍 Raw text: $generatedText');
-              return null;
+              print('🔍 Hata detayı:');
+              print('  - Hata türü: ${e.runtimeType}');
+              print('  - Hata mesajı: $e');
+              print('🔍 Raw AI yanıtı:');
+              print(
+                generatedText.length > 500
+                    ? generatedText.substring(0, 500) + '...'
+                    : generatedText,
+              );
+
+              // Fallback: Basit bir program oluştur
+              print('🔄 Fallback program oluşturuluyor...');
+              return _createFallbackProgram(user, customPrompt: customPrompt);
             }
           } else {
             print('❌ API yanıtında content/parts bulunamadı');
             print('🔍 Finish Reason: ${candidate['finishReason']}');
-            return null;
+            print('🔄 Fallback program oluşturuluyor...');
+            return _createFallbackProgram(user, customPrompt: customPrompt);
           }
         } else {
           print('❌ API yanıtında candidates bulunamadı');
-          return null;
+          print('🔄 Fallback program oluşturuluyor...');
+          return _createFallbackProgram(user, customPrompt: customPrompt);
         }
       } else {
         print('❌ Gemini API hatası: ${response.statusCode}');
         print('❌ Error Body: ${response.body}');
-        return null;
+        print('🔄 Fallback program oluşturuluyor...');
+        return _createFallbackProgram(user, customPrompt: customPrompt);
       }
     } catch (e) {
-      print('Gemini AI hatası: $e');
-      return null;
+      print('❌ Gemini AI hatası: $e');
+      print('🔄 Fallback program oluşturuluyor...');
+      return _createFallbackProgram(user, customPrompt: customPrompt);
     }
   }
 
@@ -480,5 +577,302 @@ Sadece JSON ver.
       if (totalExercises > 12) return 'intermediate';
     }
     return 'beginner';
+  }
+
+  // JSON yapısını tamamla (eksik parantezleri ekle)
+  static String _completeJsonStructure(String jsonText) {
+    print('🔧 JSON yapısı tamamlanıyor...');
+
+    // Parantez sayılarını kontrol et
+    int openBraces = jsonText.split('{').length - 1;
+    int closeBraces = jsonText.split('}').length - 1;
+    int openBrackets = jsonText.split('[').length - 1;
+    int closeBrackets = jsonText.split(']').length - 1;
+
+    // Eksik kapanış parantezlerini ekle
+    while (openBraces > closeBraces) {
+      jsonText += '}';
+      closeBraces++;
+    }
+
+    while (openBrackets > closeBrackets) {
+      jsonText += ']';
+      closeBrackets++;
+    }
+
+    print('✅ JSON yapısı tamamlandı');
+    return jsonText;
+  }
+
+  // AI'nın verdiği geçersiz JSON formatlarını düzelt
+  static String _fixAiJsonFormat(String jsonText) {
+    print('🔧 AI JSON formatı düzeltiliyor...');
+
+    // "reps" için tüm olası formatları düzelt
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"reps":\s*"(\d+)-(\d+)"'), // "8-12"
+      (match) => '"reps": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"reps":\s*(\d+)-(\d+)'), // 8-12
+      (match) => '"reps": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"reps":\s*"(\d+)"'), // "8"
+      (match) => '"reps": ${match.group(1)}',
+    );
+
+    // "sets" için tüm olası formatları düzelt
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"sets":\s*"(\d+)-(\d+)"'), // "3-4"
+      (match) => '"sets": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"sets":\s*(\d+)-(\d+)'), // 3-4
+      (match) => '"sets": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"sets":\s*"(\d+)"'), // "3"
+      (match) => '"sets": ${match.group(1)}',
+    );
+
+    // "restSeconds" için de aynı düzeltmeyi yap
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"restSeconds":\s*"(\d+)-(\d+)"'),
+      (match) => '"restSeconds": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"restSeconds":\s*(\d+)-(\d+)'),
+      (match) => '"restSeconds": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"restSeconds":\s*"(\d+)"'),
+      (match) => '"restSeconds": ${match.group(1)}',
+    );
+
+    // "estimatedDuration" için de aynı düzeltmeyi yap
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"estimatedDuration":\s*"(\d+)-(\d+)"'),
+      (match) => '"estimatedDuration": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"estimatedDuration":\s*(\d+)-(\d+)'),
+      (match) => '"estimatedDuration": ${match.group(1)}',
+    );
+
+    jsonText = jsonText.replaceAllMapped(
+      RegExp(r'"estimatedDuration":\s*"(\d+)"'),
+      (match) => '"estimatedDuration": ${match.group(1)}',
+    );
+
+    print('✅ AI JSON formatı düzeltildi');
+    print('🔍 Düzeltilen JSON önizlemesi:');
+    print(
+      jsonText.length > 500 ? jsonText.substring(0, 500) + '...' : jsonText,
+    );
+    return jsonText;
+  }
+
+  // Fallback program oluştur (AI başarısız olursa)
+  static Map<String, dynamic> _createFallbackProgram(
+    UserModel user, {
+    String? customPrompt,
+  }) {
+    print('🔄 Fallback program oluşturuluyor...');
+    print('👤 Fallback için kullanıcı bilgileri:');
+    print('  - Haftalık sıklık: ${user.weeklyFrequency ?? 3} gün');
+    print('  - Hedef: ${user.goal ?? 'general_fitness'}');
+    print('  - Seviye: ${user.fitnessLevel ?? 'beginner'}');
+    if (customPrompt != null && customPrompt.isNotEmpty) {
+      print('🎯 Kullanıcının özel istekleri: $customPrompt');
+    }
+
+    final weeklyFrequency = user.weeklyFrequency ?? 3;
+    final goal = user.goal ?? 'general_fitness';
+    final fitnessLevel = user.fitnessLevel ?? 'beginner';
+
+    // Hedef bazlı program adı
+    String programTitle = 'Kişiselleştirilmiş Program';
+    String description = 'Size özel hazırlanmış spor programı';
+
+    switch (goal) {
+      case 'weight_loss':
+        programTitle = 'Kilo Verme Programı';
+        description = 'Kilo verme hedefli kardiyo ve güç antrenmanı programı';
+        break;
+      case 'muscle_gain':
+        programTitle = 'Kas Geliştirme Programı';
+        description = 'Kas kütlesi artırma odaklı güç antrenmanı programı';
+        break;
+      case 'endurance':
+        programTitle = 'Dayanıklılık Programı';
+        description = 'Kardiyovasküler dayanıklılık geliştirme programı';
+        break;
+      case 'general_fitness':
+        programTitle = 'Genel Fitness Programı';
+        description = 'Genel sağlık ve fitness geliştirme programı';
+        break;
+    }
+
+    // Haftalık program oluştur
+    List<Map<String, dynamic>> days = [];
+    List<String> dayNames = [
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar',
+    ];
+    List<String> focuses = [
+      'Üst Vücut',
+      'Alt Vücut',
+      'Kardiyo',
+      'Tam Vücut',
+      'Core',
+      'Esneklik',
+      'Dinlenme',
+    ];
+
+    for (int i = 0; i < weeklyFrequency; i++) {
+      String dayName = dayNames[i % dayNames.length];
+      String focus = focuses[i % focuses.length];
+
+      List<Map<String, dynamic>> exercises = [];
+
+      // Özel istekleri kontrol et - Belirli günleri boş bırak
+      bool shouldSkipDay = false;
+      if (customPrompt != null && customPrompt.isNotEmpty) {
+        String lowerPrompt = customPrompt.toLowerCase();
+
+        // Gün isimleri ve karşılıkları
+        Map<String, String> dayMapping = {
+          'pazartesi': 'Pazartesi',
+          'salı': 'Salı',
+          'çarşamba': 'Çarşamba',
+          'perşembe': 'Perşembe',
+          'cuma': 'Cuma',
+          'cumartesi': 'Cumartesi',
+          'pazar': 'Pazar',
+        };
+
+        // Hangi günün boş bırakılacağını kontrol et
+        for (String dayKey in dayMapping.keys) {
+          if (lowerPrompt.contains(dayKey) &&
+              (lowerPrompt.contains('boş') ||
+                  lowerPrompt.contains('dinlen') ||
+                  lowerPrompt.contains('atla'))) {
+            if (dayName == dayMapping[dayKey]) {
+              shouldSkipDay = true;
+              print('🎯 $dayName günü özel istek nedeniyle boş bırakılıyor');
+              break;
+            }
+          }
+        }
+
+        // Dinlenme günü isteği kontrol et
+        if (lowerPrompt.contains('dinlenme') && lowerPrompt.contains('gün')) {
+          // Haftalık sıklıktan 1 gün çıkar ve son günü dinlenme yap
+          if (i == weeklyFrequency - 1) {
+            shouldSkipDay = true;
+            print('🎯 Son gün ($dayName) dinlenme günü olarak ayarlandı');
+          }
+        }
+      }
+
+      // Günü atla
+      if (shouldSkipDay) {
+        days.add({
+          'dayNumber': i + 1,
+          'dayName': dayName,
+          'focus': 'Dinlenme',
+          'exercises': [],
+          'estimatedDuration': 0,
+        });
+        continue;
+      }
+
+      // Seviye bazlı egzersizler
+      if (fitnessLevel == 'beginner') {
+        exercises = [
+          {'name': 'Push-up', 'sets': 3, 'reps': 8, 'restSeconds': 60},
+          {'name': 'Squat', 'sets': 3, 'reps': 10, 'restSeconds': 60},
+          {'name': 'Plank', 'sets': 3, 'reps': 30, 'restSeconds': 60},
+        ];
+      } else if (fitnessLevel == 'intermediate') {
+        exercises = [
+          {'name': 'Bench Press', 'sets': 4, 'reps': 8, 'restSeconds': 90},
+          {'name': 'Squat', 'sets': 4, 'reps': 8, 'restSeconds': 90},
+          {'name': 'Deadlift', 'sets': 3, 'reps': 6, 'restSeconds': 120},
+          {'name': 'Pull-up', 'sets': 3, 'reps': 6, 'restSeconds': 90},
+        ];
+      } else {
+        exercises = [
+          {
+            'name': 'Barbell Bench Press',
+            'sets': 5,
+            'reps': 5,
+            'restSeconds': 120,
+          },
+          {'name': 'Back Squat', 'sets': 5, 'reps': 5, 'restSeconds': 120},
+          {'name': 'Deadlift', 'sets': 5, 'reps': 5, 'restSeconds': 180},
+          {'name': 'Overhead Press', 'sets': 4, 'reps': 6, 'restSeconds': 120},
+          {'name': 'Pull-up', 'sets': 4, 'reps': 8, 'restSeconds': 90},
+        ];
+      }
+
+      // Antrenman süresi kontrolü
+      int estimatedDuration = 45; // Varsayılan süre
+      if (customPrompt != null && customPrompt.isNotEmpty) {
+        String lowerPrompt = customPrompt.toLowerCase();
+        if (lowerPrompt.contains('2 saat') ||
+            lowerPrompt.contains('120 dakika')) {
+          estimatedDuration = 120;
+          print('🎯 Antrenman süresi 2 saat olarak ayarlandı');
+        } else if (lowerPrompt.contains('1 saat') ||
+            lowerPrompt.contains('60 dakika')) {
+          estimatedDuration = 60;
+          print('🎯 Antrenman süresi 1 saat olarak ayarlandı');
+        } else if (lowerPrompt.contains('1.5 saat') ||
+            lowerPrompt.contains('90 dakika')) {
+          estimatedDuration = 90;
+          print('🎯 Antrenman süresi 1.5 saat olarak ayarlandı');
+        }
+      }
+
+      days.add({
+        'dayNumber': i + 1,
+        'dayName': dayName,
+        'focus': focus,
+        'exercises': exercises,
+        'estimatedDuration': shouldSkipDay ? 0 : estimatedDuration,
+      });
+    }
+
+    final fallbackProgram = {
+      'title': programTitle,
+      'description': description,
+      'duration': '1 hafta',
+      'weeks': [
+        {'weekNumber': 1, 'days': days},
+      ],
+    };
+
+    print('✅ Fallback program oluşturuldu:');
+    print('📝 Program adı: $programTitle');
+    print('📅 Süre: 1 hafta');
+    print('🏋️ Gün sayısı: ${days.length}');
+    print('🎯 Hedef: $goal');
+    print('💪 Seviye: $fitnessLevel');
+
+    return fallbackProgram;
   }
 }

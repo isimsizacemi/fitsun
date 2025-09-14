@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'services/firebase_service.dart';
-import 'services/gemini_service.dart';
 import 'services/auth_service.dart';
 import 'models/user_model.dart';
 import 'screens/auth_screen.dart';
@@ -73,14 +72,13 @@ class _ProfileCheckScreenState extends State<ProfileCheckScreen> {
 
   Future<void> _checkProfile() async {
     try {
-      final user = FirebaseService.currentUser;
-      if (user != null) {
-        final userProfile = await GeminiService.getUserProfile(user.uid);
-        setState(() {
-          _user = userProfile;
-          _isLoading = false;
-        });
-      }
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.loadUserProfile();
+
+      setState(() {
+        _user = authService.currentUser;
+        _isLoading = false;
+      });
     } catch (e) {
       print('Profil kontrol hatası: $e');
       setState(() => _isLoading = false);

@@ -447,7 +447,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final locations = [
       {'value': 'home', 'label': 'Ev'},
       {'value': 'gym', 'label': 'Spor Salonu'},
-      {'value': 'outdoor', 'label': 'Açık Alan'},
+      {'value': 'outdoor', 'label': 'Açık Hava'},
     ];
 
     return Column(

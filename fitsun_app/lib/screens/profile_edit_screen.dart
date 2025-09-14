@@ -61,11 +61,35 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     'general_fitness': 'Genel Fitness',
   };
   final List<String> _fitnessLevelOptions = ['Başlangıç', 'Orta', 'İleri'];
+
+  final Map<String, String> _fitnessLevelValueMap = {
+    'Başlangıç': 'beginner',
+    'Orta': 'intermediate',
+    'İleri': 'advanced',
+  };
+
+  final Map<String, String> _fitnessLevelDisplayMap = {
+    'beginner': 'Başlangıç',
+    'intermediate': 'Orta',
+    'advanced': 'İleri',
+  };
   final List<String> _workoutLocationOptions = [
     'Ev',
     'Spor Salonu',
     'Açık Hava',
   ];
+  
+  final Map<String, String> _workoutLocationValueMap = {
+    'Ev': 'home',
+    'Spor Salonu': 'gym',
+    'Açık Hava': 'outdoor',
+  };
+  
+  final Map<String, String> _workoutLocationDisplayMap = {
+    'home': 'Ev',
+    'gym': 'Spor Salonu',
+    'outdoor': 'Açık Hava',
+  };
   final List<String> _equipmentOptions = [
     'Dambıl',
     'Barbell',
@@ -107,6 +131,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
       final user = authService.currentUser;
       if (user != null) {
+        // Text controller'ları güncelle
         _nameController.text = user.name ?? '';
         _ageController.text = user.age?.toString() ?? '';
         _heightController.text = user.height?.toString() ?? '';
@@ -118,24 +143,50 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             user.weeklyFrequency?.toString() ?? '';
         _preferredTimeController.text = user.preferredTime ?? '';
 
+        // Dropdown değerlerini güncelle
         _selectedGender = _genderDisplayMap[user.gender] ?? user.gender;
         _selectedGoal = _goalDisplayMap[user.goal] ?? user.goal;
-        _selectedFitnessLevel = user.fitnessLevel;
-        _selectedWorkoutLocation = user.workoutLocation;
-        _selectedEquipment = user.availableEquipment ?? [];
+        _selectedFitnessLevel =
+            _fitnessLevelDisplayMap[user.fitnessLevel] ?? user.fitnessLevel;
+        _selectedWorkoutLocation = _workoutLocationDisplayMap[user.workoutLocation] ?? user.workoutLocation;
+        _selectedEquipment = List<String>.from(user.availableEquipment ?? []);
+
+        print('✅ Profil verileri yüklendi: ${user.name}');
+        print('✅ Cinsiyet: $_selectedGender');
+        print('✅ Hedef: $_selectedGoal');
+        print('✅ Fitness Seviyesi: $_selectedFitnessLevel');
+        print('✅ Antrenman Yeri: $_selectedWorkoutLocation');
+        print('✅ Ekipmanlar: $_selectedEquipment');
 
         if (mounted) {
           setState(() {});
         }
+      } else {
+        print('❌ Kullanıcı bilgisi bulunamadı');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
-      print('Profil yükleme hatası: $e');
+      print('❌ Profil yükleme hatası: $e');
       if (mounted) {
+        String errorMessage = 'Profil yüklenirken hata oluştu';
+        if (e.toString().contains('SocketException')) {
+          errorMessage =
+              'İnternet bağlantısı hatası. Bağlantınızı kontrol edin.';
+        } else if (e.toString().contains('TimeoutException')) {
+          errorMessage = 'Bağlantı zaman aşımı. Tekrar deneyin.';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Profil yüklenirken hata oluştu: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     }
@@ -177,20 +228,47 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       }
 
       final updatedUser = currentUser.copyWith(
-        name: _nameController.text.trim(),
-        age: int.tryParse(_ageController.text),
-        height: double.tryParse(_heightController.text),
-        weight: double.tryParse(_weightController.text),
-        gender: _genderValueMap[_selectedGender] ?? _selectedGender,
-        goal: _goalValueMap[_selectedGoal] ?? _selectedGoal,
-        fitnessLevel: _selectedFitnessLevel,
-        workoutLocation: _selectedWorkoutLocation,
-        availableEquipment: _selectedEquipment,
-        bodyFat: double.tryParse(_bodyFatController.text),
-        muscleMass: double.tryParse(_muscleMassController.text),
-        experience: _experienceController.text.trim(),
-        weeklyFrequency: int.tryParse(_weeklyFrequencyController.text),
-        preferredTime: _preferredTimeController.text.trim(),
+        name: _nameController.text.trim().isEmpty
+            ? null
+            : _nameController.text.trim(),
+        age: _ageController.text.trim().isEmpty
+            ? null
+            : int.tryParse(_ageController.text),
+        height: _heightController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_heightController.text),
+        weight: _weightController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_weightController.text),
+        gender: _selectedGender != null
+            ? (_genderValueMap[_selectedGender] ?? _selectedGender)
+            : null,
+        goal: _selectedGoal != null
+            ? (_goalValueMap[_selectedGoal] ?? _selectedGoal)
+            : null,
+        fitnessLevel: _selectedFitnessLevel != null
+            ? (_fitnessLevelValueMap[_selectedFitnessLevel] ??
+                  _selectedFitnessLevel)
+            : null,
+        workoutLocation: _selectedWorkoutLocation != null ? (_workoutLocationValueMap[_selectedWorkoutLocation] ?? _selectedWorkoutLocation) : null,
+        availableEquipment: _selectedEquipment.isEmpty
+            ? null
+            : _selectedEquipment,
+        bodyFat: _bodyFatController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_bodyFatController.text),
+        muscleMass: _muscleMassController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_muscleMassController.text),
+        experience: _experienceController.text.trim().isEmpty
+            ? null
+            : _experienceController.text.trim(),
+        weeklyFrequency: _weeklyFrequencyController.text.trim().isEmpty
+            ? null
+            : int.tryParse(_weeklyFrequencyController.text),
+        preferredTime: _preferredTimeController.text.trim().isEmpty
+            ? null
+            : _preferredTimeController.text.trim(),
         updatedAt: DateTime.now(),
       );
 
@@ -208,11 +286,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     } catch (e) {
       print('Profil kaydetme hatası: $e');
       if (mounted) {
+        String errorMessage = 'Profil kaydedilirken hata oluştu';
+        if (e.toString().contains('SocketException')) {
+          errorMessage =
+              'İnternet bağlantısı hatası. Bağlantınızı kontrol edin.';
+        } else if (e.toString().contains('TimeoutException')) {
+          errorMessage = 'Bağlantı zaman aşımı. Tekrar deneyin.';
+        } else if (e.toString().contains('permission-denied')) {
+          errorMessage = 'Yetki hatası. Lütfen tekrar giriş yapın.';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Profil kaydedilirken hata oluştu: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     }
@@ -252,8 +337,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 label: 'Ad Soyad',
                 hint: 'Adınızı ve soyadınızı girin',
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Ad soyad gereklidir';
+                  if (value != null && value.trim().isNotEmpty) {
+                    if (value.trim().length < 2) {
+                      return 'Ad soyad en az 2 karakter olmalıdır';
+                    }
                   }
                   return null;
                 },
@@ -265,12 +352,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 hint: 'Yaşınızı girin',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Yaş gereklidir';
-                  }
-                  final age = int.tryParse(value);
-                  if (age == null || age < 13 || age > 100) {
-                    return 'Geçerli bir yaş girin (13-100)';
+                  if (value != null && value.trim().isNotEmpty) {
+                    final age = int.tryParse(value);
+                    if (age == null || age < 13 || age > 100) {
+                      return 'Geçerli bir yaş girin (13-100)';
+                    }
                   }
                   return null;
                 },
@@ -281,12 +367,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 value: _selectedGender,
                 items: _genderOptions,
                 onChanged: (value) => setState(() => _selectedGender = value),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Cinsiyet seçiniz';
-                  }
-                  return null;
-                },
+                validator: null, // Cinsiyet zorunlu değil
               ),
 
               const SizedBox(height: 24),
@@ -304,12 +385,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       hint: '170',
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Boy gereklidir';
-                        }
-                        final height = double.tryParse(value);
-                        if (height == null || height < 100 || height > 250) {
-                          return 'Geçerli boy girin (100-250 cm)';
+                        if (value != null && value.trim().isNotEmpty) {
+                          final height = double.tryParse(value);
+                          if (height == null || height < 100 || height > 250) {
+                            return 'Geçerli boy girin (100-250 cm)';
+                          }
                         }
                         return null;
                       },
@@ -323,12 +403,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       hint: '70',
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Kilo gereklidir';
-                        }
-                        final weight = double.tryParse(value);
-                        if (weight == null || weight < 30 || weight > 300) {
-                          return 'Geçerli kilo girin (30-300 kg)';
+                        if (value != null && value.trim().isNotEmpty) {
+                          final weight = double.tryParse(value);
+                          if (weight == null || weight < 30 || weight > 300) {
+                            return 'Geçerli kilo girin (30-300 kg)';
+                          }
                         }
                         return null;
                       },
@@ -390,12 +469,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 value: _selectedGoal,
                 items: _goalOptions,
                 onChanged: (value) => setState(() => _selectedGoal = value),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Hedef seçiniz';
-                  }
-                  return null;
-                },
+                validator: null, // Hedef zorunlu değil
               ),
 
               _buildDropdownField(
@@ -404,12 +478,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 items: _fitnessLevelOptions,
                 onChanged: (value) =>
                     setState(() => _selectedFitnessLevel = value),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Fitness seviyesi seçiniz';
-                  }
-                  return null;
-                },
+                validator: null, // Fitness seviyesi zorunlu değil
               ),
 
               _buildDropdownField(
@@ -418,24 +487,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 items: _workoutLocationOptions,
                 onChanged: (value) =>
                     setState(() => _selectedWorkoutLocation = value),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Antrenman yeri seçiniz';
-                  }
-                  return null;
-                },
+                validator: null, // Antrenman yeri zorunlu değil
               ),
 
               _buildTextField(
                 controller: _experienceController,
                 label: 'Deneyim Süresi',
                 hint: 'Örn: 2 yıl, 6 ay',
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Deneyim süresi gereklidir';
-                  }
-                  return null;
-                },
+                validator: null, // Deneyim süresi zorunlu değil
               ),
 
               _buildTextField(
@@ -444,12 +503,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 hint: '3',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Haftalık sıklık gereklidir';
-                  }
-                  final frequency = int.tryParse(value);
-                  if (frequency == null || frequency < 1 || frequency > 7) {
-                    return 'Geçerli sıklık girin (1-7)';
+                  if (value != null && value.trim().isNotEmpty) {
+                    final frequency = int.tryParse(value);
+                    if (frequency == null || frequency < 1 || frequency > 7) {
+                      return 'Geçerli sıklık girin (1-7)';
+                    }
                   }
                   return null;
                 },
@@ -459,12 +517,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 controller: _preferredTimeController,
                 label: 'Tercih Edilen Antrenman Süresi',
                 hint: 'Örn: 45 dakika, 1 saat',
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Antrenman süresi gereklidir';
-                  }
-                  return null;
-                },
+                validator: null, // Antrenman süresi zorunlu değil
               ),
 
               const SizedBox(height: 24),
