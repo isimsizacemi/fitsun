@@ -89,6 +89,14 @@ class GeminiService {
 
       // Firebase'e kaydet - users/{userId}/programs subcollection'ına
       print('💾 Program Firebase\'e kaydediliyor...');
+      print('👤 User ID: ${user.id}');
+      print('📋 Program ID: ${program.id}');
+
+      if (user.id.isEmpty) {
+        print('❌ User ID boş, program kaydedilemiyor');
+        throw Exception('User ID boş, program kaydedilemiyor');
+      }
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.id)

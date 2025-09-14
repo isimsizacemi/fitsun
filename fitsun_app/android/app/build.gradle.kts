@@ -43,3 +43,15 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Firebase BOM - tüm Firebase kütüphanelerinin uyumlu versiyonlarını sağlar
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    
+    // Google Play Services
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+}

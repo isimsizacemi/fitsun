@@ -10,6 +10,9 @@ import 'screens/profile_setup_screen.dart';
 import 'screens/workout_program_screen.dart';
 import 'screens/exercise_guide_screen.dart';
 import 'screens/profile_edit_screen.dart';
+import 'screens/statistics_screen.dart';
+import 'screens/weekly_summary_screen.dart';
+import 'screens/daily_tracking_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,11 +60,20 @@ class FitSunApp extends StatelessWidget {
           ),
         ),
         routes: {
-          '/workout-program': (context) => WorkoutProgramScreen(
-            userProfile:
-                Provider.of<AuthService>(context).currentUser ??
-                UserModel.empty(),
-          ),
+          '/workout-program': (context) {
+            final authService = Provider.of<AuthService>(
+              context,
+              listen: false,
+            );
+            final currentUser = authService.currentUser;
+
+            if (currentUser == null || currentUser.id.isEmpty) {
+              // Kullanıcı giriş yapmamış veya ID boş, ana sayfaya yönlendir
+              return const HomeScreen();
+            }
+
+            return WorkoutProgramScreen(userProfile: currentUser);
+          },
           '/exercise-guide': (context) => const ExerciseGuideScreen(),
           '/profile-edit': (context) => const ProfileEditScreen(),
         },
@@ -240,12 +252,29 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    WorkoutProgramScreen(userProfile: UserModel.empty()),
-    const ExerciseGuideScreen(),
-    const ProfileEditScreen(),
-  ];
+  List<Widget> get _screens {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final currentUser = authService.currentUser;
+
+    return [
+      const HomeScreen(),
+      const DailyTrackingScreen(),
+      currentUser != null && currentUser.id.isNotEmpty
+          ? WorkoutProgramScreen(userProfile: currentUser)
+          : const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_off, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('Lütfen giriş yapın'),
+                ],
+              ),
+            ),
+      const StatisticsScreen(),
+      const WeeklySummaryScreen(),
+    ];
+  }
 
   final List<NavigationDestination> _destinations = [
     const NavigationDestination(
@@ -254,19 +283,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       label: 'Ana Sayfa',
     ),
     const NavigationDestination(
+      icon: Icon(Icons.today_outlined),
+      selectedIcon: Icon(Icons.today),
+      label: 'Günlük',
+    ),
+    const NavigationDestination(
       icon: Icon(Icons.fitness_center_outlined),
       selectedIcon: Icon(Icons.fitness_center),
       label: 'Programlar',
     ),
     const NavigationDestination(
-      icon: Icon(Icons.sports_gymnastics_outlined),
-      selectedIcon: Icon(Icons.sports_gymnastics),
-      label: 'Egzersizler',
+      icon: Icon(Icons.analytics_outlined),
+      selectedIcon: Icon(Icons.analytics),
+      label: 'İstatistikler',
     ),
     const NavigationDestination(
-      icon: Icon(Icons.person_outline),
-      selectedIcon: Icon(Icons.person),
-      label: 'Profil',
+      icon: Icon(Icons.calendar_view_week_outlined),
+      selectedIcon: Icon(Icons.calendar_view_week),
+      label: 'Haftalık',
     ),
   ];
 

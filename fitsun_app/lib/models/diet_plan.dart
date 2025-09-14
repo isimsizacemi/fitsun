@@ -36,7 +36,7 @@ class DietPlan {
   // Firestore'dan veri okuma
   factory DietPlan.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    
+
     return DietPlan(
       id: doc.id,
       userId: data['userId'] ?? '',
@@ -49,9 +49,11 @@ class DietPlan {
       targetFat: (data['targetFat'] ?? 0.0).toDouble(),
       isActive: data['isActive'] ?? true,
       programId: data['programId'],
-      meals: (data['meals'] as List<dynamic>?)
-          ?.map((e) => Meal.fromMap(e))
-          .toList() ?? [],
+      meals:
+          (data['meals'] as List<dynamic>?)
+              ?.map((e) => Meal.fromMap(e))
+              .toList() ??
+          [],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -259,7 +261,7 @@ class DietIntake {
 
   factory DietIntake.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    
+
     return DietIntake(
       id: doc.id,
       userId: data['userId'] ?? '',
@@ -312,5 +314,79 @@ class DietIntake {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
     );
+  }
+}
+
+// Günlük beslenme özeti
+class DailyNutritionSummary {
+  final DateTime date;
+  final DietPlan dietPlan;
+  final List<Meal> plannedMeals;
+  final List<DietIntake> completedIntakes;
+  final int totalCalories;
+  final double totalProtein;
+  final double totalCarbs;
+  final double totalFat;
+  final double caloriesProgress;
+  final double proteinProgress;
+  final double carbsProgress;
+  final double fatProgress;
+
+  DailyNutritionSummary({
+    required this.date,
+    required this.dietPlan,
+    required this.plannedMeals,
+    required this.completedIntakes,
+    required this.totalCalories,
+    required this.totalProtein,
+    required this.totalCarbs,
+    required this.totalFat,
+    required this.caloriesProgress,
+    required this.proteinProgress,
+    required this.carbsProgress,
+    required this.fatProgress,
+  });
+
+  // Tamamlanan öğün sayısı
+  int get completedMealsCount => completedIntakes.length;
+
+  // Toplam planlanan öğün sayısı
+  int get totalPlannedMeals => plannedMeals.length;
+
+  // Tamamlanma oranı
+  double get completionRate => totalPlannedMeals > 0
+      ? (completedMealsCount / totalPlannedMeals) * 100
+      : 0.0;
+
+  // Genel ilerleme
+  double get overallProgress =>
+      (caloriesProgress + proteinProgress + carbsProgress + fatProgress) / 4;
+
+  // Kalori durumu
+  String get caloriesStatus {
+    if (caloriesProgress >= 100) return 'Tamamlandı';
+    if (caloriesProgress >= 80) return 'Neredeyse tamamlandı';
+    if (caloriesProgress >= 60) return 'İyi gidiyor';
+    if (caloriesProgress >= 40) return 'Devam et';
+    return 'Daha fazla beslenmelisin';
+  }
+
+  // Protein durumu
+  String get proteinStatus {
+    if (proteinProgress >= 100) return 'Tamamlandı';
+    if (proteinProgress >= 80) return 'Neredeyse tamamlandı';
+    if (proteinProgress >= 60) return 'İyi gidiyor';
+    if (proteinProgress >= 40) return 'Devam et';
+    return 'Daha fazla protein almalısın';
+  }
+
+  // Tarih formatı
+  String get dateFormatted {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  // Besin değerleri özeti
+  String get nutritionSummary {
+    return '${totalCalories}kcal | P:${totalProtein.toStringAsFixed(1)}g | K:${totalCarbs.toStringAsFixed(1)}g | Y:${totalFat.toStringAsFixed(1)}g';
   }
 }

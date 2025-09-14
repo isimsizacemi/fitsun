@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../models/workout_program.dart';
 import '../services/gemini_service.dart';
@@ -15,6 +16,9 @@ class WorkoutProgramScreen extends StatefulWidget {
 class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   WorkoutProgram? _workoutProgram;
   bool _isLoading = false;
+  List<WorkoutProgram> _userPrograms = [];
+  bool _isLoadingPrograms = false;
+  bool _showCreateForm = false;
 
   // Ek kullanıcı verileri için form alanları
   final _weightController = TextEditingController();
@@ -100,6 +104,7 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   void initState() {
     super.initState();
     _initializeFormData();
+    _loadUserPrograms();
   }
 
   @override
@@ -214,6 +219,17 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
             : widget.userProfile.availableEquipment,
       );
 
+      print('👤 Updated User ID: ${updatedUser.id}');
+      print('📧 Updated User Email: ${updatedUser.email}');
+
+      if (updatedUser.id.isEmpty) {
+        print('❌ User ID boş, program oluşturulamıyor');
+        _showErrorSnackBar(
+          '❌ Kullanıcı bilgileri eksik. Lütfen profil ayarlarını kontrol edin.',
+        );
+        return;
+      }
+
       final program = await GeminiService.generateWorkoutProgram(
         updatedUser,
         customPrompt: _customPromptController.text.trim().isNotEmpty
@@ -227,11 +243,14 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
         print('📅 Süre: ${program.durationWeeks} hafta');
         print('🏋️ Gün sayısı: ${program.weeklySchedule.length}');
 
-        setState(() => _workoutProgram = program);
+        setState(() {
+          _workoutProgram = program;
+          _showCreateForm = false; // Form ekranından çık
+        });
         _showSuccessSnackBar('🎉 Program başarıyla oluşturuldu!');
 
-        // Ana ekrana dön ve programları yenile
-        Navigator.pop(context, true);
+        // Program listesini yenile
+        _loadUserPrograms();
       } else {
         print('❌ Program oluşturulamadı');
         _showErrorSnackBar('❌ Program oluşturulamadı. Lütfen tekrar deneyin.');
@@ -324,9 +343,94 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
           ),
         ],
       ),
-      body: _workoutProgram == null
+      body: _workoutProgram != null
+          ? _buildProgramDetailScreen(_workoutProgram!)
+          : _showCreateForm
           ? _buildGenerateScreen()
-          : _buildProgramScreen(),
+          : _buildProgramListScreen(),
+    );
+  }
+
+  // Program listesi ekranı
+  Widget _buildProgramListScreen() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Başlık ve Yeni Program Butonu
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Spor Programlarım',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _showCreateForm = true; // Create form'a git
+                  });
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Yeni Program'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Program listesi
+          if (_isLoadingPrograms)
+            const Center(child: CircularProgressIndicator())
+          else if (_userPrograms.isEmpty)
+            _buildEmptyState()
+          else
+            ..._userPrograms
+                .map((program) => _buildProgramCard(program))
+                .toList(),
+        ],
+      ),
+    );
+  }
+
+  // Boş durum ekranı
+  Widget _buildEmptyState() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            Icon(Icons.fitness_center, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Henüz programınız yok',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'AI ile size özel bir spor programı oluşturun',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _workoutProgram = null; // Generate screen'e git
+                });
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('İlk Programımı Oluştur'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -465,226 +569,12 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
     );
   }
 
-  Widget _buildProgramScreen() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Program Başlığı
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _workoutProgram!.programName,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _workoutProgram!.description,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _buildInfoChip(
-                        '${_workoutProgram!.durationWeeks} Hafta',
-                        Icons.calendar_today,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildInfoChip(
-                        _getDifficultyText(_workoutProgram!.difficulty),
-                        Icons.trending_up,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Yeniden Oluştur Butonu
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _isLoading ? null : _generateWorkoutProgram,
-              icon: _isLoading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.refresh),
-              label: Text(
-                _isLoading
-                    ? 'Yeniden Oluşturuluyor...'
-                    : 'Yeni Program Oluştur',
-              ),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Haftalık Program
-          Text(
-            'Haftalık Program',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-
-          ..._workoutProgram!.weeklySchedule.map(
-            (day) => _buildWorkoutDay(day),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildInfoChip(String text, IconData icon) {
     return Chip(
       avatar: Icon(icon, size: 16),
       label: Text(text),
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
     );
-  }
-
-  Widget _buildWorkoutDay(WorkoutDay day) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: ExpansionTile(
-        title: Text(
-          day.dayName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(day.focus),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (day.estimatedDuration != null) ...[
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 16,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Tahmini Süre: ${day.estimatedDuration} dakika',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                if (day.notes != null && day.notes!.isNotEmpty) ...[
-                  Text(
-                    'Notlar: ${day.notes}',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                Text(
-                  'Egzersizler:',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...day.exercises.map((exercise) => _buildExercise(exercise)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExercise(Exercise exercise) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  exercise.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              Text(
-                '${exercise.sets} x ${exercise.reps}',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          if (exercise.weight != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Ağırlık: ${exercise.weight}',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-          ],
-          if (exercise.restSeconds != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Dinlenme: ${exercise.restSeconds} saniye',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-          ],
-          if (exercise.notes != null && exercise.notes!.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Not: ${exercise.notes}',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  String _getDifficultyText(String difficulty) {
-    switch (difficulty) {
-      case 'beginner':
-        return 'Başlangıç';
-      case 'intermediate':
-        return 'Orta';
-      case 'advanced':
-        return 'İleri';
-      default:
-        return difficulty;
-    }
   }
 
   Widget _buildCurrentProfileCard() {
@@ -975,5 +865,608 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
         ),
       ),
     );
+  }
+
+  // Kullanıcının programlarını yükle
+  Future<void> _loadUserPrograms() async {
+    if (widget.userProfile.id.isEmpty) return;
+
+    setState(() => _isLoadingPrograms = true);
+
+    try {
+      print('📋 Kullanıcı programları yükleniyor...');
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userProfile.id)
+          .collection('programs')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final programs = querySnapshot.docs
+          .map((doc) => WorkoutProgram.fromMap(doc.data(), doc.id))
+          .toList();
+
+      setState(() {
+        _userPrograms = programs;
+        _isLoadingPrograms = false;
+      });
+
+      print('✅ ${programs.length} program yüklendi');
+    } catch (e) {
+      print('❌ Program yükleme hatası: $e');
+      setState(() => _isLoadingPrograms = false);
+    }
+  }
+
+  // Program kartı widget'ı
+  Widget _buildProgramCard(WorkoutProgram program) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () {
+          setState(() => _workoutProgram = program);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      program.programName,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${program.durationWeeks} hafta',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                program.description,
+                style: Theme.of(context).textTheme.bodyMedium,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${program.weeklySchedule.length} gün/hafta',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                  const Spacer(),
+                  Text(
+                    _formatDate(program.createdAt),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Program detay ekranı
+  Widget _buildProgramDetailScreen(WorkoutProgram program) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Program başlığı
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    program.programName,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    program.description,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _buildInfoChip(
+                        '${program.durationWeeks} hafta',
+                        Icons.schedule,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildInfoChip(
+                        '${program.weeklySchedule.length} gün/hafta',
+                        Icons.calendar_today,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Haftalık program
+          Text(
+            'Haftalık Program',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+
+          ...program.weeklySchedule.asMap().entries.map((entry) {
+            final dayIndex = entry.key;
+            final day = entry.value;
+
+            return _buildDayCard(day, dayIndex);
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  // Gün kartı
+  Widget _buildDayCard(WorkoutDay day, int dayIndex) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ExpansionTile(
+        title: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Center(
+                child: Text(
+                  '${dayIndex + 1}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    day.dayName,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    day.focus,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (day.exercises.isNotEmpty)
+              ElevatedButton.icon(
+                onPressed: () => _startWorkout(day),
+                icon: const Icon(Icons.play_arrow, size: 16),
+                label: const Text('Başla'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        children: [
+          if (day.exercises.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Dinlenme günü',
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey,
+                ),
+              ),
+            )
+          else
+            ...day.exercises
+                .map((exercise) => _buildExerciseTile(exercise))
+                .toList(),
+        ],
+      ),
+    );
+  }
+
+  // Egzersiz tile'ı
+  Widget _buildExerciseTile(Exercise exercise) {
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.fitness_center),
+      ),
+      title: Text(exercise.name),
+      subtitle: Text('${exercise.sets} set x ${exercise.reps} tekrar'),
+      trailing: Text('${exercise.restSeconds ?? 60}s dinlenme'),
+    );
+  }
+
+  // Antrenman başlatma
+  void _startWorkout(WorkoutDay day) {
+    showDialog(
+      context: context,
+      builder: (context) => WorkoutSessionDialog(
+        day: day,
+        onWorkoutCompleted: (completedExercises) {
+          _saveWorkoutSession(day, completedExercises);
+        },
+      ),
+    );
+  }
+
+  // Antrenman oturumu kaydetme
+  Future<void> _saveWorkoutSession(
+    WorkoutDay day,
+    List<CompletedExercise> completedExercises,
+  ) async {
+    try {
+      print('💾 Antrenman oturumu kaydediliyor...');
+
+      final session = {
+        'dayName': day.dayName,
+        'focus': day.focus,
+        'exercises': completedExercises.map((e) => e.toMap()).toList(),
+        'completedAt': DateTime.now().toIso8601String(),
+        'userId': widget.userProfile.id,
+      };
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userProfile.id)
+          .collection('workout_sessions')
+          .add(session);
+
+      _showSuccessSnackBar('✅ Antrenman tamamlandı ve kaydedildi!');
+      print('✅ Antrenman oturumu kaydedildi');
+    } catch (e) {
+      print('❌ Antrenman kaydetme hatası: $e');
+      _showErrorSnackBar('❌ Antrenman kaydedilemedi');
+    }
+  }
+
+  // Tarih formatla
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date).inDays;
+
+    if (difference == 0) return 'Bugün';
+    if (difference == 1) return 'Dün';
+    if (difference < 7) return '$difference gün önce';
+
+    return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+// Tamamlanan egzersiz modeli
+class CompletedExercise {
+  final String name;
+  final int sets;
+  final int reps;
+  final int? weight; // kg
+  final int restSeconds;
+  final bool completed;
+
+  CompletedExercise({
+    required this.name,
+    required this.sets,
+    required this.reps,
+    this.weight,
+    required this.restSeconds,
+    required this.completed,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'sets': sets,
+      'reps': reps,
+      'weight': weight,
+      'restSeconds': restSeconds,
+      'completed': completed,
+    };
+  }
+}
+
+// Antrenman oturumu dialog'u
+class WorkoutSessionDialog extends StatefulWidget {
+  final WorkoutDay day;
+  final Function(List<CompletedExercise>) onWorkoutCompleted;
+
+  const WorkoutSessionDialog({
+    super.key,
+    required this.day,
+    required this.onWorkoutCompleted,
+  });
+
+  @override
+  State<WorkoutSessionDialog> createState() => _WorkoutSessionDialogState();
+}
+
+class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
+  List<CompletedExercise> _completedExercises = [];
+  int _currentExerciseIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeExercises();
+  }
+
+  void _initializeExercises() {
+    _completedExercises = widget.day.exercises.map((exercise) {
+      return CompletedExercise(
+        name: exercise.name,
+        sets: exercise.sets,
+        reps: exercise.reps,
+        weight: null,
+        restSeconds: exercise.restSeconds ?? 60,
+        completed: false,
+      );
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_currentExerciseIndex >= _completedExercises.length) {
+      return _buildCompletionScreen();
+    }
+
+    final currentExercise = _completedExercises[_currentExerciseIndex];
+
+    return Dialog(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.8,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Başlık
+            Text(
+              'Antrenman: ${widget.day.dayName}',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.day.focus,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // İlerleme
+            LinearProgressIndicator(
+              value: (_currentExerciseIndex + 1) / _completedExercises.length,
+            ),
+            const SizedBox(height: 16),
+
+            // Mevcut egzersiz
+            Expanded(child: _buildExerciseScreen(currentExercise)),
+
+            // Butonlar
+            Row(
+              children: [
+                if (_currentExerciseIndex > 0)
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _previousExercise,
+                      child: const Text('Önceki'),
+                    ),
+                  ),
+                if (_currentExerciseIndex > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _nextExercise,
+                    child: Text(
+                      _currentExerciseIndex == _completedExercises.length - 1
+                          ? 'Tamamla'
+                          : 'Sonraki',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExerciseScreen(CompletedExercise exercise) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Egzersiz adı
+            Text(
+              exercise.name,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+
+            // Set bilgileri
+            Text(
+              '${exercise.sets} set x ${exercise.reps} tekrar',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+
+            // Ağırlık girişi (opsiyonel)
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Ağırlık (kg) - Opsiyonel',
+                border: OutlineInputBorder(),
+                suffixText: 'kg',
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  _completedExercises[_currentExerciseIndex] =
+                      CompletedExercise(
+                        name: exercise.name,
+                        sets: exercise.sets,
+                        reps: exercise.reps,
+                        weight: value.isNotEmpty ? int.tryParse(value) : null,
+                        restSeconds: exercise.restSeconds,
+                        completed: exercise.completed,
+                      );
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Tamamlandı checkbox
+            CheckboxListTile(
+              title: const Text('Bu egzersizi tamamladım'),
+              value: exercise.completed,
+              onChanged: (value) {
+                setState(() {
+                  _completedExercises[_currentExerciseIndex] =
+                      CompletedExercise(
+                        name: exercise.name,
+                        sets: exercise.sets,
+                        reps: exercise.reps,
+                        weight: exercise.weight,
+                        restSeconds: exercise.restSeconds,
+                        completed: value ?? false,
+                      );
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompletionScreen() {
+    final completedCount = _completedExercises.where((e) => e.completed).length;
+
+    return Dialog(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.8,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, size: 64, color: Colors.green),
+            const SizedBox(height: 16),
+            Text(
+              'Antrenman Tamamlandı!',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$completedCount/${_completedExercises.length} egzersiz tamamlandı',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('İptal'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      widget.onWorkoutCompleted(_completedExercises);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Kaydet'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _previousExercise() {
+    setState(() {
+      _currentExerciseIndex--;
+    });
+  }
+
+  void _nextExercise() {
+    if (_currentExerciseIndex < _completedExercises.length - 1) {
+      setState(() {
+        _currentExerciseIndex++;
+      });
+    } else {
+      // Son egzersiz, tamamlama ekranına git
+      setState(() {
+        _currentExerciseIndex++;
+      });
+    }
   }
 }

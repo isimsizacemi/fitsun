@@ -11,6 +11,7 @@ import 'profile_edit_screen.dart';
 import 'workout_program_screen.dart';
 import 'program_detail_screen.dart';
 import 'exercise_guide_screen.dart';
+import 'workout_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -252,6 +253,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           // Antrenman takibi ekranına git
                           _showWorkoutTrackingDialog(context);
+                        },
+                      ),
+
+                      // Antrenman Geçmişi Kartı
+                      _buildQuickAccessCard(
+                        context: context,
+                        title: 'Antrenman Geçmişi',
+                        icon: Icons.history,
+                        color: Colors.indigo,
+                        onTap: () {
+                          if (_userProfile != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WorkoutHistoryScreen(
+                                  userProfile: _userProfile!,
+                                ),
+                              ),
+                            );
+                          }
                         },
                       ),
 
