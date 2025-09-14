@@ -312,12 +312,22 @@ class GeminiService {
       print('📝 Prompt oluşturuluyor...');
       final prompt =
           '''
-Kullanıcı: ${user.age} yaş, ${user.height}cm, ${user.weight}kg ${user.gender}
-Hedef: ${user.goal} | Seviye: ${user.fitnessLevel} | Yağ: %${user.bodyFat ?? 15}
-Deneyim: ${user.experience ?? '1 yıl'} | Haftalık: ${user.weeklyFrequency ?? 3} gün | Süre: ${user.preferredTime ?? '45-60 dakika'}
-Ekipman: ${user.availableEquipment?.join(', ') ?? 'Yok'}
+Kullanıcı Profil Bilgileri:
+- Yaş: ${user.age} yaş
+- Boy: ${user.height} cm
+- Kilo: ${user.weight} kg
+- Cinsiyet: ${user.gender}
+- Hedef: ${user.goal}
+- Fitness Seviyesi: ${user.fitnessLevel}
+- Yağ Oranı: %${user.bodyFat ?? 'Belirtilmemiş'}
+- Kas Kütlesi: ${user.muscleMass ?? 'Belirtilmemiş'} kg
+- Deneyim Süresi: ${user.experience ?? 'Belirtilmemiş'}
+- Haftalık Antrenman Sıklığı: ${user.weeklyFrequency ?? 3} gün
+- Tercih Edilen Antrenman Süresi: ${user.preferredTime ?? '45-60 dakika'}
+- Antrenman Yeri: ${user.workoutLocation ?? 'Belirtilmemiş'}
+- Mevcut Ekipmanlar: ${user.availableEquipment?.join(', ') ?? 'Yok'}
 
-Bu bilgilere göre ${user.weeklyFrequency ?? 3} günlük program oluştur.
+Bu detaylı kullanıcı profil bilgilerine göre ${user.weeklyFrequency ?? 3} günlük, kişiselleştirilmiş bir spor programı oluştur. Program, kullanıcının fiziksel özelliklerini, hedeflerini, mevcut ekipmanlarını ve deneyim seviyesini dikkate almalıdır.
 
 JSON:
 {

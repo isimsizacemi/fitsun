@@ -23,6 +23,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _ageController = TextEditingController();
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
+  final _bodyFatController = TextEditingController();
+  final _muscleMassController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _weeklyFrequencyController = TextEditingController();
+  final _preferredTimeController = TextEditingController();
 
   String? _selectedGender;
   String? _selectedGoal;
@@ -56,6 +61,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       _ageController.text = widget.userProfile!.age?.toString() ?? '';
       _heightController.text = widget.userProfile!.height?.toString() ?? '';
       _weightController.text = widget.userProfile!.weight?.toString() ?? '';
+      _bodyFatController.text = widget.userProfile!.bodyFat?.toString() ?? '';
+      _muscleMassController.text =
+          widget.userProfile!.muscleMass?.toString() ?? '';
+      _experienceController.text = widget.userProfile!.experience ?? '';
+      _weeklyFrequencyController.text =
+          widget.userProfile!.weeklyFrequency?.toString() ?? '';
+      _preferredTimeController.text = widget.userProfile!.preferredTime ?? '';
       _selectedGender = widget.userProfile!.gender;
       _selectedGoal = widget.userProfile!.goal;
       _selectedFitnessLevel = widget.userProfile!.fitnessLevel;
@@ -70,6 +82,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     _ageController.dispose();
     _heightController.dispose();
     _weightController.dispose();
+    _bodyFatController.dispose();
+    _muscleMassController.dispose();
+    _experienceController.dispose();
+    _weeklyFrequencyController.dispose();
+    _preferredTimeController.dispose();
     super.dispose();
   }
 
@@ -104,6 +121,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           'fitnessLevel': _selectedFitnessLevel,
           'workoutLocation': _selectedWorkoutLocation,
           'availableEquipment': _selectedEquipment,
+          'bodyFat': _bodyFatController.text.isNotEmpty
+              ? double.parse(_bodyFatController.text)
+              : null,
+          'muscleMass': _muscleMassController.text.isNotEmpty
+              ? double.parse(_muscleMassController.text)
+              : null,
+          'experience': _experienceController.text.trim().isNotEmpty
+              ? _experienceController.text.trim()
+              : null,
+          'weeklyFrequency': _weeklyFrequencyController.text.isNotEmpty
+              ? int.parse(_weeklyFrequencyController.text)
+              : null,
+          'preferredTime': _preferredTimeController.text.trim().isNotEmpty
+              ? _preferredTimeController.text.trim()
+              : null,
           'updatedAt': DateTime.now(),
         };
 
@@ -220,6 +252,63 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   }
                   return null;
                 },
+              ),
+
+              // Fiziksel Özellikler (İsteğe bağlı)
+              _buildSectionTitle('Fiziksel Özellikler (İsteğe Bağlı)'),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _bodyFatController,
+                      label: 'Yağ Oranı (%)',
+                      hintText: '15.0',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _muscleMassController,
+                      label: 'Kas Kütlesi (kg)',
+                      hintText: '35.0',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Fitness Bilgileri (İsteğe bağlı)
+              _buildSectionTitle('Fitness Bilgileri (İsteğe Bağlı)'),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                controller: _experienceController,
+                label: 'Deneyim Süresi',
+                hintText: 'Örn: 2 yıl, 6 ay',
+              ),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _weeklyFrequencyController,
+                      label: 'Haftalık Antrenman Sıklığı',
+                      hintText: '3',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _preferredTimeController,
+                      label: 'Tercih Edilen Antrenman Süresi',
+                      hintText: '45 dakika',
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 

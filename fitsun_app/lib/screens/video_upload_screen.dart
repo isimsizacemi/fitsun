@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:video_player/video_player.dart';
 import '../services/firebase_storage_service.dart';
 import '../services/exercise_database_service.dart';
-import '../models/exercise_detail.dart';
 
 class VideoUploadScreen extends StatefulWidget {
   final String exerciseId;
@@ -37,7 +36,8 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
   }
 
   void _loadExistingVideo() {
-    if (widget.existingVideoUrl != null && widget.existingVideoUrl!.isNotEmpty) {
+    if (widget.existingVideoUrl != null &&
+        widget.existingVideoUrl!.isNotEmpty) {
       _uploadedVideoUrl = widget.existingVideoUrl;
     }
   }
@@ -51,16 +51,20 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
 
       if (result != null && result.files.isNotEmpty) {
         final file = File(result.files.first.path!);
-        
+
         // Video formatını kontrol et
         if (!FirebaseStorageService.isValidVideoFormat(file.path)) {
-          _showErrorSnackBar('Desteklenmeyen video formatı. Lütfen MP4, MOV, AVI veya MKV formatında bir video seçin.');
+          _showErrorSnackBar(
+            'Desteklenmeyen video formatı. Lütfen MP4, MOV, AVI veya MKV formatında bir video seçin.',
+          );
           return;
         }
 
         // Video boyutunu kontrol et
         if (!FirebaseStorageService.isValidVideoSize(file)) {
-          _showErrorSnackBar('Video dosyası çok büyük. Maksimum 100MB olmalıdır.');
+          _showErrorSnackBar(
+            'Video dosyası çok büyük. Maksimum 100MB olmalıdır.',
+          );
           return;
         }
 
@@ -149,7 +153,7 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
 
     try {
       await FirebaseStorageService.deleteVideo(_uploadedVideoUrl!);
-      
+
       setState(() {
         _uploadedVideoUrl = null;
         _selectedVideo = null;
@@ -166,19 +170,13 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 
@@ -260,9 +258,10 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Video önizlemesi
-                    if (_selectedVideo != null && _previewController != null) ...[
+                    if (_selectedVideo != null &&
+                        _previewController != null) ...[
                       Container(
                         height: 200,
                         decoration: BoxDecoration(
@@ -286,7 +285,11 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
                       child: ElevatedButton.icon(
                         onPressed: _isUploading ? null : _pickVideo,
                         icon: const Icon(Icons.video_library),
-                        label: Text(_selectedVideo != null ? 'Farklı Video Seç' : 'Video Seç'),
+                        label: Text(
+                          _selectedVideo != null
+                              ? 'Farklı Video Seç'
+                              : 'Video Seç',
+                        ),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
@@ -305,7 +308,7 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _isUploading ? null : _uploadVideo,
-                  icon: _isUploading 
+                  icon: _isUploading
                       ? const SizedBox(
                           width: 20,
                           height: 20,

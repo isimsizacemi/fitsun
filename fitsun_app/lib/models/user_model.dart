@@ -13,6 +13,7 @@ class UserModel {
   final List<String>?
   availableEquipment; // ['dumbbells', 'barbell', 'resistance_bands', etc.]
   final double? bodyFat; // yağ oranı yüzdesi
+  final double? muscleMass; // kas kütlesi (kg)
   final String? experience; // deneyim süresi
   final int? weeklyFrequency; // haftalık antrenman sıklığı
   final String? preferredTime; // tercih edilen antrenman süresi
@@ -32,6 +33,7 @@ class UserModel {
     this.workoutLocation,
     this.availableEquipment,
     this.bodyFat,
+    this.muscleMass,
     this.experience,
     this.weeklyFrequency,
     this.preferredTime,
@@ -55,6 +57,7 @@ class UserModel {
           ? List<String>.from(map['availableEquipment'])
           : null,
       bodyFat: map['bodyFat']?.toDouble(),
+      muscleMass: map['muscleMass']?.toDouble(),
       experience: map['experience'],
       weeklyFrequency: map['weeklyFrequency'],
       preferredTime: map['preferredTime'],
@@ -76,6 +79,7 @@ class UserModel {
       'workoutLocation': workoutLocation,
       'availableEquipment': availableEquipment,
       'bodyFat': bodyFat,
+      'muscleMass': muscleMass,
       'experience': experience,
       'weeklyFrequency': weeklyFrequency,
       'preferredTime': preferredTime,
@@ -97,6 +101,7 @@ class UserModel {
     String? workoutLocation,
     List<String>? availableEquipment,
     double? bodyFat,
+    double? muscleMass,
     String? experience,
     int? weeklyFrequency,
     String? preferredTime,
@@ -116,6 +121,7 @@ class UserModel {
       workoutLocation: workoutLocation ?? this.workoutLocation,
       availableEquipment: availableEquipment ?? this.availableEquipment,
       bodyFat: bodyFat ?? this.bodyFat,
+      muscleMass: muscleMass ?? this.muscleMass,
       experience: experience ?? this.experience,
       weeklyFrequency: weeklyFrequency ?? this.weeklyFrequency,
       preferredTime: preferredTime ?? this.preferredTime,

@@ -16,18 +16,169 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   WorkoutProgram? _workoutProgram;
   bool _isLoading = false;
 
+  // Ek kullanıcı verileri için form alanları
+  final _weightController = TextEditingController();
+  final _bodyFatController = TextEditingController();
+  final _muscleMassController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _weeklyFrequencyController = TextEditingController();
+  final _preferredTimeController = TextEditingController();
+
+  String? _selectedGoal;
+  String? _selectedFitnessLevel;
+  String? _selectedWorkoutLocation;
+  List<String> _selectedEquipment = [];
+
+  final List<String> _goalOptions = [
+    'Kilo Verme',
+    'Kas Kazanımı',
+    'Dayanıklılık',
+    'Genel Fitness',
+  ];
+
+  final Map<String, String> _goalValueMap = {
+    'Kilo Verme': 'weight_loss',
+    'Kas Kazanımı': 'muscle_gain',
+    'Dayanıklılık': 'endurance',
+    'Genel Fitness': 'general_fitness',
+  };
+
+  final Map<String, String> _goalDisplayMap = {
+    'weight_loss': 'Kilo Verme',
+    'muscle_gain': 'Kas Kazanımı',
+    'endurance': 'Dayanıklılık',
+    'general_fitness': 'Genel Fitness',
+  };
+
+  final List<String> _fitnessLevelOptions = ['Başlangıç', 'Orta', 'İleri'];
+
+  final List<String> _workoutLocationOptions = [
+    'Ev',
+    'Spor Salonu',
+    'Açık Hava',
+  ];
+
+  final List<String> _equipmentOptions = [
+    'Dambıl',
+    'Barbell',
+    'Direnç Bandı',
+    'Kettlebell',
+    'TRX',
+    'Yoga Matı',
+    'Koşu Bandı',
+    'Bisiklet',
+    'Kardiyo Makineleri',
+    'Serbest Ağırlık',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFormData();
+  }
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _bodyFatController.dispose();
+    _muscleMassController.dispose();
+    _experienceController.dispose();
+    _weeklyFrequencyController.dispose();
+    _preferredTimeController.dispose();
+    super.dispose();
+  }
+
+  void _initializeFormData() {
+    // Mevcut kullanıcı verilerini form alanlarına yükle
+    _weightController.text = widget.userProfile.weight?.toString() ?? '';
+    _bodyFatController.text = widget.userProfile.bodyFat?.toString() ?? '';
+    _muscleMassController.text =
+        widget.userProfile.muscleMass?.toString() ?? '';
+    _experienceController.text = widget.userProfile.experience ?? '';
+    _weeklyFrequencyController.text =
+        widget.userProfile.weeklyFrequency?.toString() ?? '';
+    _preferredTimeController.text = widget.userProfile.preferredTime ?? '';
+
+    _selectedGoal =
+        _goalDisplayMap[widget.userProfile.goal] ?? widget.userProfile.goal;
+    _selectedFitnessLevel = widget.userProfile.fitnessLevel;
+    _selectedWorkoutLocation = widget.userProfile.workoutLocation;
+    _selectedEquipment = widget.userProfile.availableEquipment ?? [];
+  }
+
   Future<void> _generateWorkoutProgram() async {
     setState(() => _isLoading = true);
 
     print('🚀 Program oluşturma başlatılıyor...');
     print('👤 Kullanıcı: ${widget.userProfile.name}');
-    print('🎯 Hedef: ${widget.userProfile.goal}');
-    print('💪 Seviye: ${widget.userProfile.fitnessLevel}');
+    print('🎯 Hedef: ${_selectedGoal ?? widget.userProfile.goal}');
+    print(
+      '💪 Seviye: ${_selectedFitnessLevel ?? widget.userProfile.fitnessLevel}',
+    );
 
     try {
-      final program = await GeminiService.generateWorkoutProgram(
-        widget.userProfile,
+      // Form validasyonu
+      if (_weightController.text.isNotEmpty &&
+          double.tryParse(_weightController.text) == null) {
+        _showErrorSnackBar('Lütfen geçerli bir kilo değeri girin.');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      if (_bodyFatController.text.isNotEmpty &&
+          double.tryParse(_bodyFatController.text) == null) {
+        _showErrorSnackBar('Lütfen geçerli bir yağ oranı değeri girin.');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      if (_muscleMassController.text.isNotEmpty &&
+          double.tryParse(_muscleMassController.text) == null) {
+        _showErrorSnackBar('Lütfen geçerli bir kas kütlesi değeri girin.');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      if (_weeklyFrequencyController.text.isNotEmpty &&
+          int.tryParse(_weeklyFrequencyController.text) == null) {
+        _showErrorSnackBar('Lütfen geçerli bir haftalık sıklık değeri girin.');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Güncellenmiş kullanıcı profili oluştur
+      final updatedUser = widget.userProfile.copyWith(
+        weight: _weightController.text.isNotEmpty
+            ? double.tryParse(_weightController.text)
+            : widget.userProfile.weight,
+        bodyFat: _bodyFatController.text.isNotEmpty
+            ? double.tryParse(_bodyFatController.text)
+            : widget.userProfile.bodyFat,
+        muscleMass: _muscleMassController.text.isNotEmpty
+            ? double.tryParse(_muscleMassController.text)
+            : widget.userProfile.muscleMass,
+        experience: _experienceController.text.isNotEmpty
+            ? _experienceController.text
+            : widget.userProfile.experience,
+        weeklyFrequency: _weeklyFrequencyController.text.isNotEmpty
+            ? int.tryParse(_weeklyFrequencyController.text)
+            : widget.userProfile.weeklyFrequency,
+        preferredTime: _preferredTimeController.text.isNotEmpty
+            ? _preferredTimeController.text
+            : widget.userProfile.preferredTime,
+        goal:
+            _goalValueMap[_selectedGoal] ??
+            _selectedGoal ??
+            widget.userProfile.goal,
+        fitnessLevel: _selectedFitnessLevel ?? widget.userProfile.fitnessLevel,
+        workoutLocation:
+            _selectedWorkoutLocation ?? widget.userProfile.workoutLocation,
+        availableEquipment: _selectedEquipment.isNotEmpty
+            ? _selectedEquipment
+            : widget.userProfile.availableEquipment,
       );
+
+      final program = await GeminiService.generateWorkoutProgram(updatedUser);
 
       if (program != null) {
         print('✅ Program başarıyla oluşturuldu!');
@@ -113,31 +264,71 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   }
 
   Widget _buildGenerateScreen() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.fitness_center,
-            size: 100,
-            color: Theme.of(context).colorScheme.primary,
+          // Başlık ve Açıklama
+          Center(
+            child: Column(
+              children: [
+                Icon(
+                  Icons.fitness_center,
+                  size: 100,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Kişiselleştirilmiş Spor Programı',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'AI ile size özel bir spor programı oluşturalım',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 32),
+
+          // Mevcut Profil Bilgileri
+          _buildCurrentProfileCard(),
           const SizedBox(height: 24),
-          Text(
-            'Kişiselleştirilmiş Spor Programınız',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'AI teknolojisi kullanarak, profil bilgilerinize göre özel bir spor programı oluşturalım.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
-            textAlign: TextAlign.center,
+
+          // Ek Bilgiler Formu
+          _buildAdditionalInfoForm(),
+          const SizedBox(height: 32),
+
+          // Program Oluştur Butonu
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isLoading ? null : _generateWorkoutProgram,
+              icon: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.auto_awesome),
+              label: Text(
+                _isLoading ? 'Program Oluşturuluyor...' : 'Program Oluştur',
+              ),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           // API Test Butonu
@@ -427,5 +618,272 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
       default:
         return difficulty;
     }
+  }
+
+  Widget _buildCurrentProfileCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.person,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Mevcut Profil Bilgileri',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildProfileInfoRow(
+              'Ad Soyad',
+              widget.userProfile.name ?? 'Belirtilmemiş',
+            ),
+            _buildProfileInfoRow(
+              'Yaş',
+              widget.userProfile.age?.toString() ?? 'Belirtilmemiş',
+            ),
+            _buildProfileInfoRow(
+              'Boy',
+              '${widget.userProfile.height?.toString() ?? 'Belirtilmemiş'} cm',
+            ),
+            _buildProfileInfoRow(
+              'Kilo',
+              '${widget.userProfile.weight?.toString() ?? 'Belirtilmemiş'} kg',
+            ),
+            _buildProfileInfoRow(
+              'Cinsiyet',
+              widget.userProfile.gender ?? 'Belirtilmemiş',
+            ),
+            _buildProfileInfoRow(
+              'Hedef',
+              widget.userProfile.goal ?? 'Belirtilmemiş',
+            ),
+            _buildProfileInfoRow(
+              'Fitness Seviyesi',
+              widget.userProfile.fitnessLevel ?? 'Belirtilmemiş',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '$label:',
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+            ),
+          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdditionalInfoForm() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Program İçin Ek Bilgiler',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Daha kişiselleştirilmiş bir program için aşağıdaki bilgileri güncelleyebilirsiniz:',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 16),
+
+            // Fiziksel Özellikler
+            Text(
+              'Fiziksel Özellikler',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _weightController,
+                    decoration: const InputDecoration(
+                      labelText: 'Kilo (kg)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _bodyFatController,
+                    decoration: const InputDecoration(
+                      labelText: 'Yağ Oranı (%)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _muscleMassController,
+                    decoration: const InputDecoration(
+                      labelText: 'Kas Kütlesi (kg)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _weeklyFrequencyController,
+                    decoration: const InputDecoration(
+                      labelText: 'Haftalık Sıklık',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Hedef ve Seviye
+            Text(
+              'Hedef ve Seviye',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedGoal,
+                    decoration: const InputDecoration(
+                      labelText: 'Hedef',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _goalOptions.map((goal) {
+                      return DropdownMenuItem<String>(
+                        value: goal,
+                        child: Text(goal),
+                      );
+                    }).toList(),
+                    onChanged: (value) => setState(() => _selectedGoal = value),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedFitnessLevel,
+                    decoration: const InputDecoration(
+                      labelText: 'Fitness Seviyesi',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _fitnessLevelOptions.map((level) {
+                      return DropdownMenuItem<String>(
+                        value: level,
+                        child: Text(level),
+                      );
+                    }).toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedFitnessLevel = value),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Antrenman Yeri
+            DropdownButtonFormField<String>(
+              value: _selectedWorkoutLocation,
+              decoration: const InputDecoration(
+                labelText: 'Antrenman Yeri',
+                border: OutlineInputBorder(),
+              ),
+              items: _workoutLocationOptions.map((location) {
+                return DropdownMenuItem<String>(
+                  value: location,
+                  child: Text(location),
+                );
+              }).toList(),
+              onChanged: (value) =>
+                  setState(() => _selectedWorkoutLocation = value),
+            ),
+            const SizedBox(height: 16),
+
+            // Ekipman Seçimi
+            Text(
+              'Mevcut Ekipmanlar',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _equipmentOptions.map((equipment) {
+                final isSelected = _selectedEquipment.contains(equipment);
+                return FilterChip(
+                  label: Text(equipment),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        _selectedEquipment.add(equipment);
+                      } else {
+                        _selectedEquipment.remove(equipment);
+                      }
+                    });
+                  },
+                  selectedColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withOpacity(0.2),
+                  checkmarkColor: Theme.of(context).colorScheme.primary,
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -12,9 +12,16 @@ class FirebaseStorageService {
     String? customFileName,
   }) async {
     try {
+      print('Video yükleme başlatılıyor...');
+      print('Dosya yolu: ${videoFile.path}');
+      print('Dosya boyutu: ${videoFile.lengthSync()} bytes');
+      print('Egzersiz ID: $exerciseId');
+      
       // Dosya adını oluştur
       final fileName = customFileName ?? 
           '${exerciseId}_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      
+      print('Dosya adı: $fileName');
       
       // Storage referansı oluştur
       final Reference ref = _storage
@@ -22,6 +29,8 @@ class FirebaseStorageService {
           .child('exercise_videos')
           .child(exerciseId)
           .child(fileName);
+
+      print('Storage referansı oluşturuldu: ${ref.fullPath}');
 
       // Upload task oluştur
       final UploadTask uploadTask = ref.putFile(
@@ -35,14 +44,22 @@ class FirebaseStorageService {
         ),
       );
 
+      print('Upload task oluşturuldu');
+
       // Upload'u takip et
       final TaskSnapshot snapshot = await uploadTask;
+      
+      print('Upload tamamlandı');
       
       // Download URL'ini al
       final String downloadUrl = await snapshot.ref.getDownloadURL();
       
+      print('Download URL alındı: $downloadUrl');
+      
       return downloadUrl;
     } catch (e) {
+      print('Video yükleme hatası: $e');
+      print('Hata türü: ${e.runtimeType}');
       throw Exception('Video yükleme hatası: $e');
     }
   }

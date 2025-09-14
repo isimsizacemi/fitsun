@@ -573,7 +573,8 @@ class ExerciseDatabaseService {
     'Burpees': ExerciseDetail(
       id: 'burpees',
       name: 'Burpees',
-      description: 'Tüm vücut HIIT egzersizi - kardiyovasküler fitness ve güç geliştirir',
+      description:
+          'Tüm vücut HIIT egzersizi - kardiyovasküler fitness ve güç geliştirir',
       instructions: '''
 1. Ayakta başlayın, ayaklarınız omuz genişliğinde
 2. Çömelin ve ellerinizi yere koyun
@@ -586,7 +587,8 @@ class ExerciseDatabaseService {
 Önemli: Tempo tutarlı olsun ve nefes almayı unutmayın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=TU8QYVW0gDU',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Tüm Vücut', 'Core', 'Bacak', 'Göğüs', 'Omuz'],
       equipment: ['Bodyweight'],
       difficulty: 'intermediate',
@@ -608,7 +610,8 @@ class ExerciseDatabaseService {
     'Mountain Climbers': ExerciseDetail(
       id: 'mountain_climbers',
       name: 'Mountain Climbers',
-      description: 'Yüksek yoğunluklu kardiyovasküler egzersiz - core ve bacak kaslarını güçlendirir',
+      description:
+          'Yüksek yoğunluklu kardiyovasküler egzersiz - core ve bacak kaslarını güçlendirir',
       instructions: '''
 1. Plank pozisyonunda başlayın
 2. Ellerinizi omuz genişliğinde yere koyun
@@ -621,7 +624,8 @@ class ExerciseDatabaseService {
 Önemli: Kalçalarınızı yukarı kaldırmayın, plank pozisyonunu koruyun.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=nmwgirgXLYM',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Core', 'Bacak', 'Omuz', 'Triceps'],
       equipment: ['Bodyweight'],
       difficulty: 'intermediate',
@@ -643,7 +647,8 @@ class ExerciseDatabaseService {
     'Jumping Jacks': ExerciseDetail(
       id: 'jumping_jacks',
       name: 'Jumping Jacks',
-      description: 'Klasik kardiyovasküler egzersiz - kalp atış hızını artırır ve koordinasyon geliştirir',
+      description:
+          'Klasik kardiyovasküler egzersiz - kalp atış hızını artırır ve koordinasyon geliştirir',
       instructions: '''
 1. Ayakta başlayın, kollarınız yanlarda
 2. Ayaklarınızı omuz genişliğinde açın
@@ -655,7 +660,8 @@ class ExerciseDatabaseService {
 Önemli: Dizlerinizi hafif bükük tutun ve yumuşak iniş yapın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=1b98WrRrmUs',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Bacak', 'Omuz', 'Core'],
       equipment: ['Bodyweight'],
       difficulty: 'beginner',
@@ -678,7 +684,8 @@ class ExerciseDatabaseService {
     'Downward Dog': ExerciseDetail(
       id: 'downward_dog',
       name: 'Downward Dog',
-      description: 'Klasik yoga pozisyonu - omuzları, hamstringleri ve baldırları esnetir',
+      description:
+          'Klasik yoga pozisyonu - omuzları, hamstringleri ve baldırları esnetir',
       instructions: '''
 1. Dört ayak üzerinde başlayın
 2. Ellerinizi omuz genişliğinde yere koyun
@@ -691,7 +698,8 @@ class ExerciseDatabaseService {
 Önemli: Omuzlarınızı kulaklarınızdan uzak tutun ve nefes almayı unutmayın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=BIQd9aLmXzE',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Hamstring', 'Baldır', 'Omuz', 'Core', 'Sırt'],
       equipment: ['Yoga Mat'],
       difficulty: 'beginner',
@@ -727,7 +735,8 @@ class ExerciseDatabaseService {
 Önemli: Ön diziniz ayak bileğinizin üzerinde olsun.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=3P7XgZbQh8Y',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Quadriceps', 'Glutes', 'Omuz', 'Göğüs', 'Core'],
       equipment: ['Yoga Mat'],
       difficulty: 'beginner',
@@ -749,7 +758,8 @@ class ExerciseDatabaseService {
     'Child\'s Pose': ExerciseDetail(
       id: 'childs_pose',
       name: 'Child\'s Pose',
-      description: 'Dinlendirici yoga pozisyonu - sırtı esnetir ve stresi azaltır',
+      description:
+          'Dinlendirici yoga pozisyonu - sırtı esnetir ve stresi azaltır',
       instructions: '''
 1. Dizlerinizin üzerinde oturun
 2. Ayak parmaklarınızı birleştirin
@@ -762,7 +772,8 @@ class ExerciseDatabaseService {
 Önemli: Nefes alırken sırtınızı genişletin, verirken rahatlayın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=2m5nWg0a_aw',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Sırt', 'Omuz', 'Kalça', 'Baldır'],
       equipment: ['Yoga Mat'],
       difficulty: 'beginner',
@@ -785,7 +796,8 @@ class ExerciseDatabaseService {
     'Hundred': ExerciseDetail(
       id: 'hundred',
       name: 'Hundred',
-      description: 'Klasik Pilates egzersizi - core kaslarını güçlendirir ve nefes kontrolü sağlar',
+      description:
+          'Klasik Pilates egzersizi - core kaslarını güçlendirir ve nefes kontrolü sağlar',
       instructions: '''
 1. Sırt üstü yatın
 2. Dizlerinizi göğsünüze çekin
@@ -798,7 +810,8 @@ class ExerciseDatabaseService {
 Önemli: Core kaslarınızı sıkın ve nefes ritmini koruyun.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=g3dJhQy2h0g',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Core', 'Göğüs', 'Omuz'],
       equipment: ['Pilates Mat'],
       difficulty: 'intermediate',
@@ -820,7 +833,8 @@ class ExerciseDatabaseService {
     'Roll Up': ExerciseDetail(
       id: 'roll_up',
       name: 'Roll Up',
-      description: 'Pilates temel egzersizi - omurga esnekliğini ve core gücünü geliştirir',
+      description:
+          'Pilates temel egzersizi - omurga esnekliğini ve core gücünü geliştirir',
       instructions: '''
 1. Sırt üstü yatın, kollarınız başınızın üzerinde
 2. Nefes alın ve kollarınızı yukarı kaldırın
@@ -833,7 +847,8 @@ class ExerciseDatabaseService {
 Önemli: Her omur kemiğini tek tek hareket ettirin.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=8XqHhGqJhJY',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Core', 'Sırt', 'Omuz'],
       equipment: ['Pilates Mat'],
       difficulty: 'intermediate',
@@ -856,7 +871,8 @@ class ExerciseDatabaseService {
     'Jump Rope': ExerciseDetail(
       id: 'jump_rope',
       name: 'Jump Rope',
-      description: 'Yüksek yoğunluklu kardiyovasküler egzersiz - koordinasyon ve dayanıklılık geliştirir',
+      description:
+          'Yüksek yoğunluklu kardiyovasküler egzersiz - koordinasyon ve dayanıklılık geliştirir',
       instructions: '''
 1. Ayakta başlayın, ipi arkada tutun
 2. Dirseklerinizi vücudunuza yakın tutun
@@ -869,7 +885,8 @@ class ExerciseDatabaseService {
 Önemli: Bileklerinizi kullanın, kollarınızı değil.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=1BZM2vReWS4',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Bacak', 'Baldır', 'Core', 'Omuz'],
       equipment: ['Jump Rope'],
       difficulty: 'intermediate',
@@ -891,7 +908,8 @@ class ExerciseDatabaseService {
     'High Knees': ExerciseDetail(
       id: 'high_knees',
       name: 'High Knees',
-      description: 'Yerinde koşu egzersizi - kalp atış hızını artırır ve bacak kaslarını güçlendirir',
+      description:
+          'Yerinde koşu egzersizi - kalp atış hızını artırır ve bacak kaslarını güçlendirir',
       instructions: '''
 1. Ayakta başlayın
 2. Yerinde koşmaya başlayın
@@ -904,7 +922,8 @@ class ExerciseDatabaseService {
 Önemli: Dizlerinizi mümkün olduğunca yükseğe çekin.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=oDdkytliOqE',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Bacak', 'Baldır', 'Core', 'Kalça'],
       equipment: ['Bodyweight'],
       difficulty: 'beginner',
@@ -927,7 +946,8 @@ class ExerciseDatabaseService {
     'Hip Flexor Stretch': ExerciseDetail(
       id: 'hip_flexor_stretch',
       name: 'Hip Flexor Stretch',
-      description: 'Kalça fleksör kaslarını esnetir - oturma pozisyonundan kaynaklanan gerginliği azaltır',
+      description:
+          'Kalça fleksör kaslarını esnetir - oturma pozisyonundan kaynaklanan gerginliği azaltır',
       instructions: '''
 1. Diz üstünde başlayın
 2. Sağ ayağınızı öne atın
@@ -941,7 +961,8 @@ class ExerciseDatabaseService {
 Önemli: Kalçalarınızı öne itin ve nefes almayı unutmayın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=7Z741dD0_3I',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Hip Flexors', 'Quadriceps', 'Kalça'],
       equipment: ['Yoga Mat'],
       difficulty: 'beginner',
@@ -963,7 +984,8 @@ class ExerciseDatabaseService {
     'Hamstring Stretch': ExerciseDetail(
       id: 'hamstring_stretch',
       name: 'Hamstring Stretch',
-      description: 'Hamstring kaslarını esnetir - bacak arkası gerginliğini azaltır',
+      description:
+          'Hamstring kaslarını esnetir - bacak arkası gerginliğini azaltır',
       instructions: '''
 1. Oturun, bacaklarınızı öne uzatın
 2. Sağ bacağınızı bükün, ayağınızı sol uyluğun içine koyun
@@ -976,7 +998,8 @@ class ExerciseDatabaseService {
 Önemli: Dizlerinizi bükük tutabilirsiniz, zorlamayın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=7Z741dD0_3I',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Hamstring', 'Baldır', 'Sırt'],
       equipment: ['Yoga Mat'],
       difficulty: 'beginner',
@@ -999,7 +1022,8 @@ class ExerciseDatabaseService {
     'Turkish Get-up': ExerciseDetail(
       id: 'turkish_get_up',
       name: 'Turkish Get-up',
-      description: 'Kompleks fonksiyonel egzersiz - koordinasyon, güç ve stabilite geliştirir',
+      description:
+          'Kompleks fonksiyonel egzersiz - koordinasyon, güç ve stabilite geliştirir',
       instructions: '''
 1. Sırt üstü yatın, sağ elinizde dambıl tutun
 2. Dambılı yukarı kaldırın
@@ -1014,7 +1038,8 @@ class ExerciseDatabaseService {
 Önemli: Dambılı her zaman yukarıda tutun ve kontrollü hareket edin.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=0bWRPC49-KI',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Tüm Vücut', 'Core', 'Omuz', 'Bacak'],
       equipment: ['Dumbbell', 'Kettlebell'],
       difficulty: 'advanced',
@@ -1036,7 +1061,8 @@ class ExerciseDatabaseService {
     'Farmer\'s Walk': ExerciseDetail(
       id: 'farmers_walk',
       name: 'Farmer\'s Walk',
-      description: 'Fonksiyonel güç egzersizi - grip gücü, core stabilitesi ve dayanıklılık geliştirir',
+      description:
+          'Fonksiyonel güç egzersizi - grip gücü, core stabilitesi ve dayanıklılık geliştirir',
       instructions: '''
 1. Her elinde ağırlık tutun (dambıl, kettlebell, sandık)
 2. Ayakta başlayın, omuzlarınızı geriye çekin
@@ -1049,7 +1075,8 @@ class ExerciseDatabaseService {
 Önemli: Core kaslarınızı sıkın ve omuzlarınızı geriye çekin.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=Fkzk_RqlYig',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Core', 'Omuz', 'Grip', 'Bacak', 'Sırt'],
       equipment: ['Dumbbells', 'Kettlebells', 'Sandık'],
       difficulty: 'intermediate',
@@ -1085,7 +1112,8 @@ class ExerciseDatabaseService {
 Önemli: Core kaslarınızı sıkın ve dambılları başınızın önünde tutun.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=QAEGgDpSqec',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Omuz', 'Triceps', 'Core', 'Bacak'],
       equipment: ['Dumbbells', 'Barbell'],
       difficulty: 'intermediate',
@@ -1120,7 +1148,8 @@ class ExerciseDatabaseService {
 Önemli: Barbell\'i ön omuzlarınızda tutun ve core kaslarınızı sıkın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=uYumuL_G_V0',
-      imageUrl: 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=500',
       muscleGroups: ['Quadriceps', 'Glutes', 'Core', 'Omuz', 'Sırt'],
       equipment: ['Barbell'],
       difficulty: 'advanced',
@@ -1143,7 +1172,8 @@ class ExerciseDatabaseService {
     'Wall Sit': ExerciseDetail(
       id: 'wall_sit',
       name: 'Wall Sit',
-      description: 'İzometrik dayanıklılık egzersizi - bacak kaslarını güçlendirir',
+      description:
+          'İzometrik dayanıklılık egzersizi - bacak kaslarını güçlendirir',
       instructions: '''
 1. Duvara sırtınızı yaslayın
 2. Ayaklarınızı duvardan 30-60 cm uzakta tutun
@@ -1156,7 +1186,8 @@ class ExerciseDatabaseService {
 Önemli: Dizlerinizi 90 derece bükün ve sırtınızı duvara yaslayın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=Yp3Zw1I3c0s',
-      imageUrl: 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=500',
       muscleGroups: ['Quadriceps', 'Glutes', 'Core'],
       equipment: ['Duvar'],
       difficulty: 'beginner',
@@ -1178,7 +1209,8 @@ class ExerciseDatabaseService {
     'Plank Hold': ExerciseDetail(
       id: 'plank_hold',
       name: 'Plank Hold',
-      description: 'İzometrik core egzersizi - karın kaslarını ve omuzları güçlendirir',
+      description:
+          'İzometrik core egzersizi - karın kaslarını ve omuzları güçlendirir',
       instructions: '''
 1. Yüz üstü yatın
 2. Dirseklerinizi omuz hizasında yerleştirin
@@ -1191,7 +1223,8 @@ class ExerciseDatabaseService {
 Önemli: Kalçalarınızı çok yukarı veya aşağı kaldırmayın.
       ''',
       videoUrl: 'https://www.youtube.com/watch?v=pSHjTRCQxIw',
-      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
       muscleGroups: ['Core', 'Omuz', 'Glutes', 'Sırt'],
       equipment: ['Yoga Mat'],
       difficulty: 'beginner',
@@ -1255,7 +1288,7 @@ class ExerciseDatabaseService {
     final exercise = _exerciseDatabase.values
         .where((e) => e.id == exerciseId)
         .firstOrNull;
-    
+
     if (exercise != null) {
       // Yeni ExerciseDetail oluştur (immutable olduğu için)
       final updatedExercise = ExerciseDetail(
@@ -1272,7 +1305,7 @@ class ExerciseDatabaseService {
         commonMistakes: exercise.commonMistakes,
         category: exercise.category,
       );
-      
+
       _exerciseDatabase[exercise.name] = updatedExercise;
     }
   }
@@ -1282,7 +1315,7 @@ class ExerciseDatabaseService {
     final exercise = _exerciseDatabase.values
         .where((e) => e.id == exerciseId)
         .firstOrNull;
-    
+
     if (exercise != null) {
       // Video URL'ini boş string yap
       updateExerciseVideo(exerciseId, '');

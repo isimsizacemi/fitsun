@@ -20,6 +20,7 @@ class ExerciseDetailScreen extends StatefulWidget {
 }
 
 class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
+  ExerciseDetail? _exerciseDetail;
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isVideoPlaying = false;
@@ -27,34 +28,52 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _exerciseDetail = _exerciseDetail;
     _loadExerciseDetail();
     _initializeVideo();
   }
 
   void _loadExerciseDetail() {
-    if (widget.exerciseDetail == null) {
+    if (_exerciseDetail == null) {
       final detail = ExerciseDatabaseService.getExerciseDetail(
         widget.exerciseName,
       );
       if (detail != null) {
         setState(() {
-          // ExerciseDetail'i güncelle
+          _exerciseDetail = detail;
         });
       }
     }
   }
 
   void _initializeVideo() {
-    if (widget.exerciseDetail?.videoUrl != null &&
-        widget.exerciseDetail!.videoUrl.isNotEmpty) {
-      _videoController = VideoPlayerController.networkUrl(
-        Uri.parse(widget.exerciseDetail!.videoUrl),
-      );
-      _videoController!.initialize().then((_) {
-        setState(() {
-          _isVideoInitialized = true;
-        });
-      });
+    if (_exerciseDetail?.videoUrl != null &&
+        _exerciseDetail!.videoUrl.isNotEmpty) {
+      try {
+        _videoController = VideoPlayerController.networkUrl(
+          Uri.parse(_exerciseDetail!.videoUrl),
+        );
+        _videoController!
+            .initialize()
+            .then((_) {
+              if (mounted) {
+                setState(() {
+                  _isVideoInitialized = true;
+                });
+              }
+            })
+            .catchError((error) {
+              print('Video yükleme hatası: $error');
+              if (mounted) {
+                setState(() {
+                  _isVideoInitialized = false;
+                });
+              }
+            });
+      } catch (e) {
+        print('Video controller oluşturma hatası: $e');
+        _isVideoInitialized = false;
+      }
     }
   }
 
@@ -72,14 +91,26 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       ),
     );
 
-    if (result != null) {
-      // Video kaydedildi, kullanıcıya bilgi ver
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Video kaydedildi: $result'),
-          backgroundColor: Colors.green,
-        ),
-      );
+    if (result != null && mounted) {
+      // Video kaydedildi, egzersiz detayını güncelle
+      setState(() {
+        // Yeni ExerciseDetail oluştur
+        _exerciseDetail = ExerciseDetail(
+          id: _exerciseDetail!.id,
+          name: _exerciseDetail!.name,
+          description: _exerciseDetail!.description,
+          instructions: _exerciseDetail!.instructions,
+          videoUrl: result,
+          imageUrl: _exerciseDetail!.imageUrl,
+          muscleGroups: _exerciseDetail!.muscleGroups,
+          equipment: _exerciseDetail!.equipment,
+          difficulty: _exerciseDetail!.difficulty,
+          tips: _exerciseDetail!.tips,
+          commonMistakes: _exerciseDetail!.commonMistakes,
+          category: _exerciseDetail!.category,
+        );
+        _initializeVideo();
+      });
     }
   }
 
@@ -88,9 +119,9 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => VideoUploadScreen(
-          exerciseId: widget.exerciseDetail?.id ?? widget.exerciseName,
+          exerciseId: _exerciseDetail?.id ?? widget.exerciseName,
           exerciseName: widget.exerciseName,
-          existingVideoUrl: widget.exerciseDetail?.videoUrl,
+          existingVideoUrl: _exerciseDetail?.videoUrl,
         ),
       ),
     ).then((_) {
@@ -127,14 +158,14 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
           ),
         ],
       ),
-      body: widget.exerciseDetail != null
+      body: _exerciseDetail != null
           ? _buildExerciseDetail()
           : _buildPlaceholder(),
     );
   }
 
   Widget _buildExerciseDetail() {
-    final exercise = widget.exerciseDetail!;
+    final exercise = _exerciseDetail!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -145,6 +176,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
           if (_isVideoInitialized) _buildVideoPlayer(),
           if (!_isVideoInitialized && exercise.videoUrl.isNotEmpty)
             _buildVideoPlaceholder(),
+          if (!_isVideoInitialized && exercise.videoUrl.isEmpty)
+            _buildNoVideoMessage(),
 
           const SizedBox(height: 24),
 
@@ -537,6 +570,94 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
         return 'İleri';
       default:
         return difficulty;
+    }
+  }
+
+  Widget _buildNoVideoMessage() {
+    return Card(
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.video_library_outlined,
+                size: 64,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Bu egzersiz için video bulunmuyor',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _recordVideo,
+                    icon: const Icon(Icons.videocam),
+                    label: const Text('Video Çek'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _uploadVideo,
+                    icon: const Icon(Icons.upload),
+                    label: const Text('Video Yükle'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _uploadVideo() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoUploadScreen(
+          exerciseId: _exerciseDetail!.id,
+          exerciseName: _exerciseDetail!.name,
+          existingVideoUrl: _exerciseDetail!.videoUrl,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      // Video yüklendi, egzersiz detayını güncelle
+      setState(() {
+        // Yeni ExerciseDetail oluştur
+        _exerciseDetail = ExerciseDetail(
+          id: _exerciseDetail!.id,
+          name: _exerciseDetail!.name,
+          description: _exerciseDetail!.description,
+          instructions: _exerciseDetail!.instructions,
+          videoUrl: result,
+          imageUrl: _exerciseDetail!.imageUrl,
+          muscleGroups: _exerciseDetail!.muscleGroups,
+          equipment: _exerciseDetail!.equipment,
+          difficulty: _exerciseDetail!.difficulty,
+          tips: _exerciseDetail!.tips,
+          commonMistakes: _exerciseDetail!.commonMistakes,
+          category: _exerciseDetail!.category,
+        );
+        _initializeVideo();
+      });
     }
   }
 }

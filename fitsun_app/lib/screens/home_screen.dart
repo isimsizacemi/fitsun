@@ -5,6 +5,7 @@ import '../services/program_sharing_service.dart';
 import '../models/user_model.dart';
 import '../models/workout_program.dart';
 import 'profile_setup_screen.dart';
+import 'profile_edit_screen.dart';
 import 'workout_program_screen.dart';
 import 'program_detail_screen.dart';
 import 'exercise_guide_screen.dart';
@@ -92,6 +93,21 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('FitSun'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileEditScreen(),
+                ),
+              ).then((_) {
+                // Profil düzenleme sayfasından dönüldüğünde profili yenile
+                _loadUserProfile();
+              });
+            },
+            tooltip: 'Profil Düzenle',
+          ),
           IconButton(icon: const Icon(Icons.logout), onPressed: _signOut),
         ],
       ),
