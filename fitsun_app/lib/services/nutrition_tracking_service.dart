@@ -110,20 +110,47 @@ class NutritionTrackingService {
       print('🗑️ Beslenme planı siliniyor...');
       print('📝 Diet Plan ID: $dietPlanId');
 
+      // Önce diyet planını kontrol et
+      final dietPlanDoc = await _dietPlansCollection.doc(dietPlanId).get();
+      if (!dietPlanDoc.exists) {
+        throw Exception('Diyet planı bulunamadı');
+      }
+
+      final dietPlanData = dietPlanDoc.data() as Map<String, dynamic>;
+      final userId = dietPlanData['userId'] as String?;
+      
+      if (userId == null || userId.isEmpty) {
+        throw Exception('Geçersiz kullanıcı ID');
+      }
+
+      print('👤 Plan sahibi: $userId');
+
+      // Diyet planını sil
       await _dietPlansCollection.doc(dietPlanId).delete();
+      print('✅ Diyet planı silindi');
 
       // İlgili beslenme kayıtlarını da sil
-      final intakesQuery = await _dietIntakesCollection
-          .where('dietPlanId', isEqualTo: dietPlanId)
-          .get();
+      try {
+        final intakesQuery = await _dietIntakesCollection
+            .where('dietPlanId', isEqualTo: dietPlanId)
+            .get();
 
-      final batch = _firestore.batch();
-      for (final doc in intakesQuery.docs) {
-        batch.delete(doc.reference);
+        if (intakesQuery.docs.isNotEmpty) {
+          final batch = _firestore.batch();
+          for (final doc in intakesQuery.docs) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
+          print('✅ ${intakesQuery.docs.length} beslenme kaydı silindi');
+        } else {
+          print('ℹ️ Silinecek beslenme kaydı bulunamadı');
+        }
+      } catch (intakeError) {
+        print('⚠️ Beslenme kayıtları silinemedi: $intakeError');
+        // Beslenme kayıtları silinemese bile diyet planı silindi, devam et
       }
-      await batch.commit();
 
-      print('✅ Beslenme planı ve kayıtları silindi');
+      print('✅ Beslenme planı silme işlemi tamamlandı');
     } catch (e) {
       print('❌ Beslenme planı silme hatası: $e');
       rethrow;
@@ -139,9 +166,7 @@ class NutritionTrackingService {
       print('🍽️ Kullanıcı beslenme planları getiriliyor...');
       print('👤 User ID: $userId');
 
-      Query query = _dietPlansCollection
-          .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true);
+      Query query = _dietPlansCollection.where('userId', isEqualTo: userId);
 
       if (isActive != null) {
         query = query.where('isActive', isEqualTo: isActive);
@@ -169,7 +194,6 @@ class NutritionTrackingService {
       final querySnapshot = await _dietPlansCollection
           .where('userId', isEqualTo: userId)
           .where('isActive', isEqualTo: true)
-          .orderBy('createdAt', descending: true)
           .limit(1)
           .get();
 

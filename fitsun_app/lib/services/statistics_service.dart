@@ -1,11 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'water_tracking_service.dart';
 import 'nutrition_tracking_service.dart';
 import 'workout_tracking_service.dart';
 
 class StatisticsService {
-  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   // Genel istatistikleri getir
   static Future<Map<String, dynamic>> getOverallStats({
     required String userId,
@@ -30,9 +27,9 @@ class StatisticsService {
         ),
       ]);
 
-      final waterStats = futures[0] as Map<String, dynamic>;
-      final nutritionStats = futures[1] as Map<String, dynamic>;
-      final workoutStats = futures[2] as Map<String, dynamic>;
+      final waterStats = futures[0];
+      final nutritionStats = futures[1];
+      final workoutStats = futures[2];
 
       // Genel skor hesapla (0-100)
       double overallScore = 0.0;
@@ -131,10 +128,12 @@ class StatisticsService {
               startDate: weekStart,
             );
 
-        final workoutSummary =
-            await WorkoutTrackingService.getWeeklyWorkoutSummary(
+        // Haftalık antrenman verilerini al
+        final workoutSessions =
+            await WorkoutTrackingService.getUserWorkoutSessions(
               userId: userId,
               startDate: weekStart,
+              endDate: weekEnd,
             );
 
         // Haftalık istatistikleri hesapla
@@ -156,14 +155,14 @@ class StatisticsService {
             ? (nutritionCompleted / nutritionTotal) * 100
             : 0;
 
-        final workoutSessions = workoutSummary.length;
-        final workoutDuration = workoutSummary.fold(
+        final workoutSessionsCount = workoutSessions.length;
+        final workoutDuration = workoutSessions.fold(
           0,
-          (sum, day) => sum + day.totalDuration,
+          (sum, session) => sum + (session.calculatedDuration ?? 0),
         );
-        final workoutExercises = workoutSummary.fold(
+        final workoutExercises = workoutSessions.fold(
           0,
-          (sum, day) => sum + day.totalExercises,
+          (sum, session) => sum + session.totalExercises,
         );
 
         trends.add({
@@ -182,10 +181,10 @@ class StatisticsService {
             'days': nutritionSummary.length,
           },
           'workout': {
-            'sessions': workoutSessions,
+            'sessions': workoutSessionsCount,
             'duration': workoutDuration,
             'exercises': workoutExercises,
-            'days': workoutSummary.length,
+            'days': workoutSessionsCount,
           },
         });
       }
@@ -198,7 +197,9 @@ class StatisticsService {
         trends.map((t) => t['nutrition']['completionRate'] as double).toList(),
       );
       final workoutTrend = _calculateTrend(
-        trends.map((t) => t['workout']['sessions'] as double).toList(),
+        trends
+            .map((t) => (t['workout']['sessions'] as int).toDouble())
+            .toList(),
       );
 
       final result = {
@@ -253,8 +254,9 @@ class StatisticsService {
             date: date,
           );
 
-      final workoutSummary =
-          await WorkoutTrackingService.getDailyWorkoutSummary(
+      // Günlük antrenman oturumunu al
+      final workoutSession =
+          await WorkoutTrackingService.getDailyWorkoutSession(
             userId: userId,
             date: date,
           );
@@ -275,8 +277,8 @@ class StatisticsService {
       }
 
       // Antrenman skoru
-      if (workoutSummary != null) {
-        workoutScore = workoutSummary.completionPercentage;
+      if (workoutSession != null) {
+        workoutScore = workoutSession.completionPercentage;
       }
 
       // Genel skor
@@ -300,14 +302,14 @@ class StatisticsService {
                 targetFat: nutritionSummary.dietPlan.targetFat,
               )
             : null,
-        'workout': workoutSummary != null
+        'workout': workoutSession != null
             ? WorkoutTrackingService.checkWorkoutGoals(
                 currentSessions: 1,
                 targetSessions: 1,
-                currentDuration: workoutSummary.totalDuration,
+                currentDuration: workoutSession.calculatedDuration ?? 0,
                 targetDuration: 60, // 1 saat hedef
-                currentExercises: workoutSummary.totalExercises,
-                targetExercises: workoutSummary.totalExercises,
+                currentExercises: workoutSession.totalExercises,
+                targetExercises: workoutSession.totalExercises,
               )
             : null,
       };
@@ -326,8 +328,8 @@ class StatisticsService {
           'waterTarget': 2500,
           'nutritionCompleted': nutritionSummary?.completedMealsCount ?? 0,
           'nutritionTotal': nutritionSummary?.totalPlannedMeals ?? 0,
-          'workoutDuration': workoutSummary?.totalDuration ?? 0,
-          'workoutExercises': workoutSummary?.totalExercises ?? 0,
+          'workoutDuration': workoutSession?.calculatedDuration ?? 0,
+          'workoutExercises': workoutSession?.totalExercises ?? 0,
         },
         'achievements': _getDailyAchievements(
           waterScore,

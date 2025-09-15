@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../models/workout_program.dart';
+import '../models/diet_plan.dart';
+import 'nutrition_tracking_service.dart';
 
 class GeminiService {
   // Google Gemini AI API URL - Güncel versiyon
@@ -944,5 +946,1036 @@ Sadece JSON ver.
     print('💪 Seviye: $fitnessLevel');
 
     return fallbackProgram;
+  }
+
+  // Gemini API isteği gönder
+  static Future<Map<String, dynamic>?> _makeGeminiRequest(String prompt) async {
+    try {
+      print('🌐 Gemini API\'ye istek gönderiliyor...');
+
+      final response = await http
+          .post(
+            Uri.parse('$_geminiApiUrl?key=$_apiKey'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'contents': [
+                {
+                  'parts': [
+                    {'text': prompt},
+                  ],
+                },
+              ],
+              'generationConfig': {
+                'maxOutputTokens': 8192,
+                'temperature': 0.7,
+                'topP': 0.8,
+                'topK': 40,
+              },
+            }),
+          )
+          .timeout(const Duration(seconds: 60));
+
+      print('📊 Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        print('❌ Gemini API hatası: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Gemini API hatası: $e');
+      return null;
+    }
+  }
+
+  // Gemini AI ile diyet planı oluştur
+  static Future<DietPlan?> generateDietPlan(
+    UserModel user, {
+    String? customPrompt,
+  }) async {
+    try {
+      print('🍽️ Gemini AI ile diyet planı oluşturuluyor...');
+      print('👤 User ID: ${user.id}');
+      print('📋 Hedef: ${user.goal}');
+
+      final prompt =
+          '''
+Kullanıcı Profil Bilgileri:
+- Yaş: ${user.age} yaş
+- Boy: ${user.height} cm
+- Kilo: ${user.weight} kg
+- Cinsiyet: ${user.gender}
+- Hedef: ${user.goal}
+- Fitness Seviyesi: ${user.fitnessLevel}
+- Yağ Oranı: %${user.bodyFat ?? '25'} (ortalama)
+- Kas Kütlesi: ${user.muscleMass ?? '35'} kg (ortalama)
+
+Bu kullanıcı profil bilgilerine göre kişiselleştirilmiş bir beslenme planı oluştur. Plan, kullanıcının fiziksel özelliklerini, hedeflerini ve deneyim seviyesini dikkate almalıdır.
+
+${customPrompt != null && customPrompt.isNotEmpty ? '''
+🚨 KRİTİK ÖZEL İSTEKLER - MUTLAKA UYGULA:
+$customPrompt
+
+⚠️ BU ÖZEL İSTEKLER ÇOK ÖNEMLİ! MUTLAKA DİKKATE AL VE UYGULA!
+⚠️ Kullanıcının özel istekleri her şeyden önce gelir!
+⚠️ Bu istekleri görmezden gelme, tam olarak uygula!
+''' : ''}
+
+Lütfen aşağıdaki JSON formatında yanıt ver. Her gün için detaylı öğünler oluştur (Pazartesi'den Pazar'a kadar). Her gün farklı yemekler ve çeşitlilik olmalı:
+
+🚨 KRİTİK GEREKSİNİMLER - MUTLAKA UYGULA:
+1. MUTLAKA tüm 7 gün için öğünler oluştur: Pazartesi, Salı, Çarşamba, Perşembe, Cuma, Cumartesi, Pazar
+2. Her gün için en az 5 öğün ekle (Kahvaltı, Ara Öğün, Öğle, Ara Öğün, Akşam)
+3. Toplam en az 35 öğün olmalı (7 gün x 5 öğün)
+4. Her öğün için "dayName" alanını ekle
+5. Her günün öğünleri farklı olmalı - aynı yemekleri tekrarlama
+6. JSON'da "meals" array'inde tüm günlerin öğünleri olmalı
+7. Eksik gün varsa hata verir - tüm 7 günü mutlaka ekle
+
+⚠️ ÖNEMLİ UYARI: Eğer kullanıcının özel istekleri varsa, onları MUTLAKA öncelikle uygula!
+⚠️ Özel istekler her şeyden önce gelir!
+
+{
+  "title": "Kişiselleştirilmiş Beslenme Planı",
+  "description": "Kullanıcının hedeflerine uygun beslenme planı",
+  "duration": 7,
+  "targetCalories": 2000,
+  "targetProtein": 150.0,
+  "targetCarbs": 250.0,
+  "targetFat": 65.0,
+  "meals": [
+    {
+      "dayName": "Pazartesi",
+      "mealType": "Kahvaltı",
+      "foodName": "Yulaf Ezmesi + Meyve",
+      "amount": "50g yulaf + 1 muz",
+      "calories": 300,
+      "protein": 12.0,
+      "carbs": 55.0,
+      "fat": 6.0,
+      "time": "08:00",
+      "notes": "Süt ile karıştır, üzerine muz ekle"
+    },
+    {
+      "dayName": "Pazartesi",
+      "mealType": "Ara Öğün",
+      "foodName": "Yoğurt + Ceviz",
+      "amount": "150g yoğurt + 5 ceviz",
+      "calories": 180,
+      "protein": 8.0,
+      "carbs": 12.0,
+      "fat": 12.0,
+      "time": "10:30",
+      "notes": "Doğal yoğurt tercih et"
+    },
+    {
+      "dayName": "Pazartesi",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Tavuk Göğsü + Bulgur Pilavı",
+      "amount": "150g tavuk + 80g bulgur",
+      "calories": 450,
+      "protein": 50.0,
+      "carbs": 35.0,
+      "fat": 8.0,
+      "time": "13:00",
+      "notes": "Izgara tavuk, az yağlı pilav"
+    },
+    {
+      "dayName": "Pazartesi",
+      "mealType": "Ara Öğün",
+      "foodName": "Elma + Badem",
+      "amount": "1 elma + 10 badem",
+      "calories": 150,
+      "protein": 4.0,
+      "carbs": 20.0,
+      "fat": 8.0,
+      "time": "16:00",
+      "notes": "Çiğ badem, kabuklu elma"
+    },
+    {
+      "dayName": "Pazartesi",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Somon + Sebze",
+      "amount": "120g somon + karışık sebze",
+      "calories": 320,
+      "protein": 40.0,
+      "carbs": 0.0,
+      "fat": 8.0,
+      "time": "19:00",
+      "notes": "Izgara veya fırın"
+    },
+    {
+      "dayName": "Pazartesi",
+      "mealType": "Gece Atıştırması",
+      "foodName": "Yunan Yoğurdu",
+      "amount": "150g",
+      "calories": 130,
+      "protein": 15.0,
+      "carbs": 8.0,
+      "fat": 5.0,
+      "time": "21:00",
+      "notes": "Az yağlı"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Kahvaltı",
+      "foodName": "Omlet + Avokado",
+      "amount": "3 yumurta + 1/2 avokado",
+      "calories": 350,
+      "protein": 20.0,
+      "carbs": 8.0,
+      "fat": 28.0,
+      "time": "08:00",
+      "notes": "Tereyağı ile pişir"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Ara Öğün",
+      "foodName": "Meyve + Ceviz",
+      "amount": "1 elma + 8 ceviz",
+      "calories": 200,
+      "protein": 5.0,
+      "carbs": 25.0,
+      "fat": 12.0,
+      "time": "10:30",
+      "notes": "Doğal meyve"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Balık + Pilav",
+      "amount": "150g balık + 100g pilav",
+      "calories": 400,
+      "protein": 35.0,
+      "carbs": 40.0,
+      "fat": 10.0,
+      "time": "13:00",
+      "notes": "Izgara balık"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Ara Öğün",
+      "foodName": "Yoğurt + Meyve",
+      "amount": "200g yoğurt + çilek",
+      "calories": 150,
+      "protein": 10.0,
+      "carbs": 20.0,
+      "fat": 4.0,
+      "time": "16:00",
+      "notes": "Doğal yoğurt"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Kahvaltı",
+      "foodName": "Peynirli Omlet + Ekmek",
+      "amount": "3 yumurta + 50g peynir + 2 dilim ekmek",
+      "calories": 400,
+      "protein": 25.0,
+      "carbs": 30.0,
+      "fat": 20.0,
+      "time": "08:00",
+      "notes": "Tereyağı ile pişir"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Ara Öğün",
+      "foodName": "Muz + Fıstık Ezmesi",
+      "amount": "1 muz + 1 yemek kaşığı fıstık ezmesi",
+      "calories": 180,
+      "protein": 6.0,
+      "carbs": 30.0,
+      "fat": 8.0,
+      "time": "10:30",
+      "notes": "Doğal fıstık ezmesi"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Köfte + Pilav",
+      "amount": "4 köfte + 100g pilav",
+      "calories": 500,
+      "protein": 40.0,
+      "carbs": 45.0,
+      "fat": 15.0,
+      "time": "13:00",
+      "notes": "Izgara köfte"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Ara Öğün",
+      "foodName": "Yoğurt + Ceviz",
+      "amount": "150g yoğurt + 5 ceviz",
+      "calories": 180,
+      "protein": 8.0,
+      "carbs": 12.0,
+      "fat": 12.0,
+      "time": "16:00",
+      "notes": "Doğal yoğurt"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Et + Salata",
+      "amount": "120g et + yeşil salata",
+      "calories": 300,
+      "protein": 35.0,
+      "carbs": 5.0,
+      "fat": 12.0,
+      "time": "19:00",
+      "notes": "Izgara et"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Kahvaltı",
+      "foodName": "Yulaf Ezmesi + Meyve",
+      "amount": "50g yulaf + 1 muz",
+      "calories": 300,
+      "protein": 12.0,
+      "carbs": 55.0,
+      "fat": 6.0,
+      "time": "08:00",
+      "notes": "Süt ile karıştır"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Ara Öğün",
+      "foodName": "Elma + Badem",
+      "amount": "1 elma + 10 badem",
+      "calories": 150,
+      "protein": 4.0,
+      "carbs": 20.0,
+      "fat": 8.0,
+      "time": "10:30",
+      "notes": "Çiğ badem"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Tavuk Göğsü + Bulgur Pilavı",
+      "amount": "150g tavuk + 80g bulgur",
+      "calories": 450,
+      "protein": 50.0,
+      "carbs": 35.0,
+      "fat": 8.0,
+      "time": "13:00",
+      "notes": "Izgara tavuk"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Ara Öğün",
+      "foodName": "Yoğurt + Ceviz",
+      "amount": "150g yoğurt + 5 ceviz",
+      "calories": 180,
+      "protein": 8.0,
+      "carbs": 12.0,
+      "fat": 12.0,
+      "time": "16:00",
+      "notes": "Doğal yoğurt"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Somon + Sebze",
+      "amount": "120g somon + karışık sebze",
+      "calories": 320,
+      "protein": 40.0,
+      "carbs": 0.0,
+      "fat": 8.0,
+      "time": "19:00",
+      "notes": "Izgara somon"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Ara Öğün",
+      "foodName": "Muz + Fıstık Ezmesi",
+      "amount": "1 muz + 1 yemek kaşığı fıstık ezmesi",
+      "calories": 180,
+      "protein": 6.0,
+      "carbs": 30.0,
+      "fat": 8.0,
+      "time": "10:30",
+      "notes": "Doğal fıstık ezmesi"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Köfte + Pilav",
+      "amount": "4 köfte + 100g pilav",
+      "calories": 500,
+      "protein": 40.0,
+      "carbs": 45.0,
+      "fat": 15.0,
+      "time": "13:00",
+      "notes": "Izgara köfte"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Ara Öğün",
+      "foodName": "Yoğurt + Bal",
+      "amount": "200g yoğurt + 1 tatlı kaşığı bal",
+      "calories": 160,
+      "protein": 12.0,
+      "carbs": 20.0,
+      "fat": 4.0,
+      "time": "16:00",
+      "notes": "Doğal bal"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Balık + Sebze",
+      "amount": "150g balık + karışık sebze",
+      "calories": 280,
+      "protein": 35.0,
+      "carbs": 10.0,
+      "fat": 8.0,
+      "time": "19:00",
+      "notes": "Izgara balık"
+    },
+    {
+      "dayName": "Perşembe",
+      "mealType": "Kahvaltı",
+      "foodName": "Menemen + Ekmek",
+      "amount": "3 yumurta + domates + biber + 2 dilim ekmek",
+      "calories": 350,
+      "protein": 20.0,
+      "carbs": 25.0,
+      "fat": 18.0,
+      "time": "08:00",
+      "notes": "Zeytinyağı ile pişir"
+    },
+    {
+      "dayName": "Perşembe",
+      "mealType": "Ara Öğün",
+      "foodName": "Elma + Badem",
+      "amount": "1 elma + 10 badem",
+      "calories": 150,
+      "protein": 4.0,
+      "carbs": 20.0,
+      "fat": 8.0,
+      "time": "10:30",
+      "notes": "Çiğ badem"
+    },
+    {
+      "dayName": "Perşembe",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Tavuk Döner + Ayran",
+      "amount": "150g tavuk döner + 1 bardak ayran",
+      "calories": 450,
+      "protein": 45.0,
+      "carbs": 25.0,
+      "fat": 18.0,
+      "time": "13:00",
+      "notes": "Az yağlı döner"
+    },
+    {
+      "dayName": "Perşembe",
+      "mealType": "Ara Öğün",
+      "foodName": "Çilek + Yoğurt",
+      "amount": "100g çilek + 150g yoğurt",
+      "calories": 120,
+      "protein": 8.0,
+      "carbs": 15.0,
+      "fat": 3.0,
+      "time": "16:00",
+      "notes": "Doğal çilek"
+    },
+    {
+      "dayName": "Perşembe",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Et Sote + Bulgur",
+      "amount": "120g et + 80g bulgur",
+      "calories": 380,
+      "protein": 40.0,
+      "carbs": 35.0,
+      "fat": 10.0,
+      "time": "19:00",
+      "notes": "Sebzeli et sote"
+    },
+    {
+      "dayName": "Cuma",
+      "mealType": "Kahvaltı",
+      "foodName": "Pancake + Bal",
+      "amount": "3 pancake + 2 yemek kaşığı bal",
+      "calories": 320,
+      "protein": 12.0,
+      "carbs": 50.0,
+      "fat": 8.0,
+      "time": "08:00",
+      "notes": "Tam buğday unu"
+    },
+    {
+      "dayName": "Cuma",
+      "mealType": "Ara Öğün",
+      "foodName": "Portakal + Ceviz",
+      "amount": "1 portakal + 8 ceviz",
+      "calories": 200,
+      "protein": 5.0,
+      "carbs": 25.0,
+      "fat": 12.0,
+      "time": "10:30",
+      "notes": "Taze portakal"
+    },
+    {
+      "dayName": "Cuma",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Mantı + Yoğurt",
+      "amount": "15 adet mantı + yoğurt sosu",
+      "calories": 400,
+      "protein": 20.0,
+      "carbs": 45.0,
+      "fat": 12.0,
+      "time": "13:00",
+      "notes": "Ev yapımı mantı"
+    },
+    {
+      "dayName": "Cuma",
+      "mealType": "Ara Öğün",
+      "foodName": "Armut + Badem",
+      "amount": "1 armut + 10 badem",
+      "calories": 180,
+      "protein": 5.0,
+      "carbs": 25.0,
+      "fat": 10.0,
+      "time": "16:00",
+      "notes": "Olgun armut"
+    },
+    {
+      "dayName": "Cuma",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Izgara Tavuk + Salata",
+      "amount": "150g tavuk + yeşil salata",
+      "calories": 300,
+      "protein": 45.0,
+      "carbs": 8.0,
+      "fat": 8.0,
+      "time": "19:00",
+      "notes": "Baharatlı tavuk"
+    },
+    {
+      "dayName": "Cumartesi",
+      "mealType": "Kahvaltı",
+      "foodName": "Krep + Meyve",
+      "amount": "2 krep + muz + çilek",
+      "calories": 350,
+      "protein": 15.0,
+      "carbs": 45.0,
+      "fat": 12.0,
+      "time": "09:00",
+      "notes": "Hafta sonu kahvaltısı"
+    },
+    {
+      "dayName": "Cumartesi",
+      "mealType": "Ara Öğün",
+      "foodName": "Kuru İncir + Ceviz",
+      "amount": "3 kuru incir + 6 ceviz",
+      "calories": 220,
+      "protein": 6.0,
+      "carbs": 35.0,
+      "fat": 10.0,
+      "time": "11:00",
+      "notes": "Doğal kuru incir"
+    },
+    {
+      "dayName": "Cumartesi",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Balık Çorbası + Ekmek",
+      "amount": "1 kase çorba + 2 dilim ekmek",
+      "calories": 380,
+      "protein": 25.0,
+      "carbs": 40.0,
+      "fat": 12.0,
+      "time": "13:30",
+      "notes": "Ev yapımı çorba"
+    },
+    {
+      "dayName": "Cumartesi",
+      "mealType": "Ara Öğün",
+      "foodName": "Meyve Salatası",
+      "amount": "Karışık meyve + yoğurt",
+      "calories": 150,
+      "protein": 6.0,
+      "carbs": 30.0,
+      "fat": 2.0,
+      "time": "16:30",
+      "notes": "Taze meyveler"
+    },
+    {
+      "dayName": "Cumartesi",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Et Güveç + Pilav",
+      "amount": "120g et + 80g pilav",
+      "calories": 420,
+      "protein": 35.0,
+      "carbs": 40.0,
+      "fat": 12.0,
+      "time": "19:30",
+      "notes": "Sebzeli güveç"
+    },
+    {
+      "dayName": "Pazar",
+      "mealType": "Kahvaltı",
+      "foodName": "Peynir Tabağı + Zeytin",
+      "amount": "Çeşitli peynirler + zeytin + ekmek",
+      "calories": 400,
+      "protein": 20.0,
+      "carbs": 30.0,
+      "fat": 22.0,
+      "time": "09:30",
+      "notes": "Zengin kahvaltı"
+    },
+    {
+      "dayName": "Pazar",
+      "mealType": "Ara Öğün",
+      "foodName": "Kuru Kayısı + Badem",
+      "amount": "5 kuru kayısı + 8 badem",
+      "calories": 180,
+      "protein": 6.0,
+      "carbs": 30.0,
+      "fat": 8.0,
+      "time": "11:30",
+      "notes": "Doğal kurutulmuş meyve"
+    },
+    {
+      "dayName": "Pazar",
+      "mealType": "Öğle Yemeği",
+      "foodName": "Kuzu Tandır + Bulgur",
+      "amount": "150g kuzu + 100g bulgur",
+      "calories": 500,
+      "protein": 45.0,
+      "carbs": 40.0,
+      "fat": 15.0,
+      "time": "14:00",
+      "notes": "Geleneksel tandır"
+    },
+    {
+      "dayName": "Pazar",
+      "mealType": "Ara Öğün",
+      "foodName": "Meyve + Yoğurt",
+      "amount": "Karışık meyve + 200g yoğurt",
+      "calories": 160,
+      "protein": 10.0,
+      "carbs": 25.0,
+      "fat": 3.0,
+      "time": "17:00",
+      "notes": "Hafif ara öğün"
+    },
+    {
+      "dayName": "Pazar",
+      "mealType": "Akşam Yemeği",
+      "foodName": "Balık Izgara + Sebze",
+      "amount": "150g balık + karışık sebze",
+      "calories": 280,
+      "protein": 35.0,
+      "carbs": 12.0,
+      "fat": 8.0,
+      "time": "20:00",
+      "notes": "Hafta sonu balık"
+    }
+  ]
+}
+
+ÖNEMLİ KURALLAR:
+1. Sadece JSON formatında yanıt ver, başka açıklama ekleme
+2. Kalori hesaplamasını kullanıcının hedefine göre ayarla
+3. Protein, karbonhidrat ve yağ oranlarını dengeli tut
+4. Her gün için 5-6 öğün planla (Kahvaltı, Ara Öğün, Öğle, Ara Öğün, Akşam, Gece Atıştırması)
+5. MUTLAKA tüm 7 gün için öğünler oluştur: Pazartesi, Salı, Çarşamba, Perşembe, Cuma, Cumartesi, Pazar
+6. Her öğün için "dayName" alanını ekle (Pazartesi, Salı, Çarşamba, Perşembe, Cuma, Cumartesi, Pazar)
+7. Sağlıklı ve besleyici gıdalar seç
+8. Türk mutfağına uygun gıdalar öner
+9. Her öğün için detaylı miktar bilgisi ver (gram, adet, porsiyon)
+10. Besin değerlerini gerçekçi tut
+11. Öğün saatlerini mantıklı aralıklarla dağıt
+12. Her gün farklı yemekler öner (çeşitlilik)
+13. Ara öğünlerde sağlıklı atıştırmalıklar ekle
+14. Spor programındaki gibi gün gün detaylı planlar oluştur
+15. Her gün için en az 5 öğün ekle
+16. Toplam en az 35 öğün olmalı (7 gün x 5 öğün)
+17. KRİTİK: Her gün için ayrı ayrı öğünler oluştur - Pazartesi, Salı, Çarşamba, Perşembe, Cuma, Cumartesi, Pazar
+18. Her günün öğünleri farklı olmalı - aynı yemekleri tekrarlama
+19. JSON'da "meals" array'inde tüm günlerin öğünleri olmalı
+20. Eksik gün varsa hata verir - tüm 7 günü mutlaka ekle
+''';
+
+      // Prompt'u log'a yaz
+      print('📝 Gemini Prompt:');
+      print('=' * 80);
+      print(prompt);
+      print('=' * 80);
+
+      final response = await _makeGeminiRequest(prompt);
+
+      if (response != null) {
+        final dietPlan = await _parseDietPlanResponse(response, user);
+        if (dietPlan != null) {
+          print('✅ Gemini AI diyet planı oluşturuldu');
+          return dietPlan;
+        }
+      }
+
+      print('⚠️ Gemini AI yanıtı işlenemedi, fallback plan oluşturuluyor...');
+      return await _createFallbackDietPlan(user);
+    } catch (e) {
+      print('❌ Gemini AI diyet planı oluşturma hatası: $e');
+      return await _createFallbackDietPlan(user);
+    }
+  }
+
+  // Gemini AI yanıtını diyet planına çevir
+  static Future<DietPlan?> _parseDietPlanResponse(
+    Map<String, dynamic> response,
+    UserModel user,
+  ) async {
+    try {
+      final content =
+          response['candidates']?[0]?['content']?['parts']?[0]?['text'];
+      if (content == null) return null;
+
+      print('📝 Gemini AI Yanıtı: $content');
+
+      // JSON'u temizle ve tamamla
+      String cleanJson = content.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.substring(7);
+      }
+      if (cleanJson.endsWith('```')) {
+        cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+      }
+      cleanJson = cleanJson.trim();
+
+      // JSON içindeki yorum satırlarını temizle
+      cleanJson = _removeJsonComments(cleanJson);
+
+      // JSON'un tamamlanmamış olup olmadığını kontrol et
+      print('🔍 JSON uzunluğu: ${cleanJson.length}');
+      print(
+        '🔍 JSON son karakterler: ${cleanJson.length > 50 ? cleanJson.substring(cleanJson.length - 50) : cleanJson}',
+      );
+
+      // Eğer JSON yarım kaldıysa, manuel olarak tamamla
+      if (!cleanJson.endsWith('}') && !cleanJson.endsWith(']')) {
+        print('⚠️ JSON yarım kaldı, tamamlanıyor...');
+        cleanJson = _completeIncompleteJson(cleanJson);
+      }
+
+      final data = jsonDecode(cleanJson) as Map<String, dynamic>;
+      print(
+        '🔍 Öğün sayısı: ${(data['meals'] as List<dynamic>?)?.length ?? 0}',
+      );
+
+      final meals =
+          (data['meals'] as List<dynamic>?)
+              ?.map(
+                (mealData) => Meal.fromMap(mealData as Map<String, dynamic>),
+              )
+              .toList() ??
+          [];
+
+      // Debug: Öğünlerin günlere göre dağılımı
+      print('📅 Günlere göre öğün dağılımı:');
+      final days = [
+        'Pazartesi',
+        'Salı',
+        'Çarşamba',
+        'Perşembe',
+        'Cuma',
+        'Cumartesi',
+        'Pazar',
+      ];
+      for (String day in days) {
+        final dayMeals = meals.where((meal) => meal.dayName == day).toList();
+        print('  $day: ${dayMeals.length} öğün');
+        for (var meal in dayMeals) {
+          print('    - ${meal.mealType}: ${meal.foodName}');
+        }
+      }
+
+      final dietPlan = DietPlan(
+        id: 'diet_${user.id}_${DateTime.now().millisecondsSinceEpoch}',
+        userId: user.id,
+        title: data['title'] ?? 'Kişiselleştirilmiş Beslenme Planı',
+        description:
+            data['description'] ?? 'AI tarafından oluşturulan beslenme planı',
+        duration: data['duration'] ?? 7,
+        targetCalories: data['targetCalories'] ?? 2000,
+        targetProtein: (data['targetProtein'] ?? 150.0).toDouble(),
+        targetCarbs: (data['targetCarbs'] ?? 250.0).toDouble(),
+        targetFat: (data['targetFat'] ?? 65.0).toDouble(),
+        isActive: true,
+        meals: meals,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Firebase'e otomatik kaydet
+      await NutritionTrackingService.createDietPlan(
+        userId: user.id,
+        title: dietPlan.title,
+        description: dietPlan.description,
+        duration: dietPlan.duration,
+        targetCalories: dietPlan.targetCalories,
+        targetProtein: dietPlan.targetProtein,
+        targetCarbs: dietPlan.targetCarbs,
+        targetFat: dietPlan.targetFat,
+        meals: dietPlan.meals,
+      );
+
+      return dietPlan;
+    } catch (e) {
+      print('❌ Diyet planı parse hatası: $e');
+      return null;
+    }
+  }
+
+  // JSON içindeki yorum satırlarını temizle
+  static String _removeJsonComments(String json) {
+    try {
+      // // ile başlayan yorum satırlarını kaldır
+      List<String> lines = json.split('\n');
+      List<String> cleanLines = [];
+
+      for (String line in lines) {
+        String trimmedLine = line.trim();
+        // Yorum satırı değilse ve boş değilse ekle
+        if (!trimmedLine.startsWith('//') && trimmedLine.isNotEmpty) {
+          cleanLines.add(line);
+        }
+      }
+
+      String cleanedJson = cleanLines.join('\n');
+      print('🧹 JSON yorumları temizlendi');
+      return cleanedJson;
+    } catch (e) {
+      print('❌ JSON yorum temizleme hatası: $e');
+      return json; // Hata olursa orijinal JSON'u döndür
+    }
+  }
+
+  // Yarım kalan JSON'u tamamla
+  static String _completeIncompleteJson(String incompleteJson) {
+    try {
+      // JSON'un nerede kaldığını bul
+      int lastCompleteMeal = incompleteJson.lastIndexOf('}');
+      if (lastCompleteMeal == -1) {
+        // Hiç tamamlanmış öğün yok, fallback döndür
+        return _getFallbackDietJson();
+      }
+
+      // Son tamamlanmış öğünden sonrasını kes
+      String completePart = incompleteJson.substring(0, lastCompleteMeal + 1);
+
+      // Eksik kısımları tamamla
+      String completedJson = completePart;
+
+      // Eğer meals array'i açıksa kapat
+      if (completePart.contains('"meals": [') && !completePart.contains(']')) {
+        completedJson += ']';
+      }
+
+      // Ana JSON objesini kapat
+      if (!completedJson.endsWith('}')) {
+        completedJson += '}';
+      }
+
+      print('✅ JSON tamamlandı');
+      return completedJson;
+    } catch (e) {
+      print('❌ JSON tamamlama hatası: $e');
+      return _getFallbackDietJson();
+    }
+  }
+
+  // Fallback JSON döndür
+  static String _getFallbackDietJson() {
+    return '''
+{
+  "title": "Kişiselleştirilmiş Beslenme Planı",
+  "description": "AI tarafından oluşturulan beslenme planı",
+  "duration": 7,
+  "targetCalories": 2000,
+  "targetProtein": 150.0,
+  "targetCarbs": 250.0,
+  "targetFat": 65.0,
+  "meals": [
+    {
+      "dayName": "Pazartesi",
+      "mealType": "Kahvaltı",
+      "foodName": "Yulaf Ezmesi + Meyve",
+      "amount": "50g yulaf + 1 muz",
+      "calories": 300,
+      "protein": 12.0,
+      "carbs": 55.0,
+      "fat": 6.0,
+      "time": "08:00",
+      "notes": "Süt ile karıştır"
+    },
+    {
+      "dayName": "Salı",
+      "mealType": "Kahvaltı",
+      "foodName": "Peynirli Omlet + Ekmek",
+      "amount": "3 yumurta + 50g peynir + 2 dilim ekmek",
+      "calories": 400,
+      "protein": 25.0,
+      "carbs": 30.0,
+      "fat": 20.0,
+      "time": "08:00",
+      "notes": "Tereyağı ile pişir"
+    },
+    {
+      "dayName": "Çarşamba",
+      "mealType": "Kahvaltı",
+      "foodName": "Yulaf Ezmesi + Meyve",
+      "amount": "50g yulaf + 1 muz",
+      "calories": 300,
+      "protein": 12.0,
+      "carbs": 55.0,
+      "fat": 6.0,
+      "time": "08:00",
+      "notes": "Süt ile karıştır"
+    }
+  ]
+}
+''';
+  }
+
+  // Fallback diyet planı oluştur
+  static Future<DietPlan> _createFallbackDietPlan(UserModel user) async {
+    print('🔄 Fallback diyet planı oluşturuluyor...');
+
+    final goal = user.goal ?? 'Genel Fitness';
+    final age = user.age ?? 25;
+    final weight = user.weight ?? 70.0;
+    final height = user.height ?? 170.0;
+
+    // Basit kalori hesaplaması
+    double bmr = 0;
+    if (user.gender == 'Erkek') {
+      bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    } else {
+      bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    }
+
+    int targetCalories = (bmr * 1.4).round(); // Hafif aktif
+    if (goal.contains('Kilo Verme')) {
+      targetCalories = (targetCalories * 0.8).round();
+    } else if (goal.contains('Kas Kazanımı')) {
+      targetCalories = (targetCalories * 1.2).round();
+    }
+
+    final meals = [
+      Meal(
+        dayName: 'Pazartesi',
+        mealType: 'Kahvaltı',
+        foodName: 'Yulaf Ezmesi + Muz',
+        amount: '50g yulaf + 1 muz',
+        calories: 300,
+        protein: 12.0,
+        carbs: 55.0,
+        fat: 6.0,
+        time: '08:00',
+        notes: 'Süt ile karıştır',
+      ),
+      Meal(
+        dayName: 'Pazartesi',
+        mealType: 'Ara Öğün',
+        foodName: 'Badem',
+        amount: '20g',
+        calories: 120,
+        protein: 4.0,
+        carbs: 4.0,
+        fat: 10.0,
+        time: '10:00',
+        notes: 'Çiğ badem',
+      ),
+      Meal(
+        dayName: 'Pazartesi',
+        mealType: 'Öğle Yemeği',
+        foodName: 'Tavuk Göğsü + Bulgur',
+        amount: '150g tavuk + 80g bulgur',
+        calories: 400,
+        protein: 50.0,
+        carbs: 35.0,
+        fat: 8.0,
+        time: '13:00',
+        notes: 'Izgara tavuk',
+      ),
+      Meal(
+        dayName: 'Pazartesi',
+        mealType: 'Ara Öğün',
+        foodName: 'Elma',
+        amount: '1 adet',
+        calories: 80,
+        protein: 0.5,
+        carbs: 20.0,
+        fat: 0.3,
+        time: '16:00',
+        notes: 'Doğal şeker',
+      ),
+      Meal(
+        dayName: 'Pazartesi',
+        mealType: 'Akşam Yemeği',
+        foodName: 'Somon + Sebze',
+        amount: '120g somon + karışık sebze',
+        calories: 350,
+        protein: 35.0,
+        carbs: 15.0,
+        fat: 18.0,
+        time: '19:00',
+        notes: 'Izgara somon',
+      ),
+      Meal(
+        dayName: 'Pazartesi',
+        mealType: 'Gece Atıştırması',
+        foodName: 'Yunan Yoğurdu',
+        amount: '150g',
+        calories: 130,
+        protein: 15.0,
+        carbs: 8.0,
+        fat: 5.0,
+        time: '21:00',
+        notes: 'Az yağlı',
+      ),
+    ];
+
+    final fallbackDietPlan = DietPlan(
+      id: 'diet_${user.id}_${DateTime.now().millisecondsSinceEpoch}',
+      userId: user.id,
+      title: '$goal Beslenme Planı',
+      description: 'AI tarafından oluşturulan temel beslenme planı',
+      duration: 7,
+      targetCalories: targetCalories,
+      targetProtein: (targetCalories * 0.25 / 4).roundToDouble(), // %25 protein
+      targetCarbs: (targetCalories * 0.45 / 4)
+          .roundToDouble(), // %45 karbonhidrat
+      targetFat: (targetCalories * 0.30 / 9).roundToDouble(), // %30 yağ
+      isActive: true,
+      meals: meals,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    // Firebase'e otomatik kaydet
+    await NutritionTrackingService.createDietPlan(
+      userId: user.id,
+      title: fallbackDietPlan.title,
+      description: fallbackDietPlan.description,
+      duration: fallbackDietPlan.duration,
+      targetCalories: fallbackDietPlan.targetCalories,
+      targetProtein: fallbackDietPlan.targetProtein,
+      targetCarbs: fallbackDietPlan.targetCarbs,
+      targetFat: fallbackDietPlan.targetFat,
+      meals: fallbackDietPlan.meals,
+    );
+
+    print('✅ Fallback diyet planı oluşturuldu:');
+    print('📝 Plan adı: ${fallbackDietPlan.title}');
+    print('📅 Süre: ${fallbackDietPlan.duration} gün');
+    print('🎯 Hedef kalori: ${fallbackDietPlan.targetCalories}');
+    print('🍽️ Öğün sayısı: ${meals.length}');
+
+    return fallbackDietPlan;
   }
 }

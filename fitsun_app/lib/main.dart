@@ -10,8 +10,7 @@ import 'screens/profile_setup_screen.dart';
 import 'screens/workout_program_screen.dart';
 import 'screens/exercise_guide_screen.dart';
 import 'screens/profile_edit_screen.dart';
-import 'screens/statistics_screen.dart';
-import 'screens/weekly_summary_screen.dart';
+import 'screens/nutrition_screen.dart';
 import 'screens/daily_tracking_screen.dart';
 
 void main() async {
@@ -60,6 +59,7 @@ class FitSunApp extends StatelessWidget {
           ),
         ),
         routes: {
+          '/home': (context) => const HomeScreen(),
           '/workout-program': (context) {
             final authService = Provider.of<AuthService>(
               context,
@@ -271,8 +271,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 ],
               ),
             ),
-      const StatisticsScreen(),
-      const WeeklySummaryScreen(),
+      const NutritionScreen(),
     ];
   }
 
@@ -293,14 +292,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       label: 'Programlar',
     ),
     const NavigationDestination(
-      icon: Icon(Icons.analytics_outlined),
-      selectedIcon: Icon(Icons.analytics),
-      label: 'İstatistikler',
-    ),
-    const NavigationDestination(
-      icon: Icon(Icons.calendar_view_week_outlined),
-      selectedIcon: Icon(Icons.calendar_view_week),
-      label: 'Haftalık',
+      icon: Icon(Icons.restaurant_outlined),
+      selectedIcon: Icon(Icons.restaurant),
+      label: 'Diyet',
     ),
   ];
 

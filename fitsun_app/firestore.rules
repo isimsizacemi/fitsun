@@ -1,25 +1,25 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Kullanıcılar sadece kendi verilerine erişebilir
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // Alt koleksiyonlar için aynı kural
-      match /{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-      }
+    // Geliştirme aşamasında tüm koleksiyonlara erişim
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
     
-    // Genel programlar herkese açık (okuma)
-    match /globalPrograms/{document} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+    // Diyet planları koleksiyonu
+    match /diet_plans/{planId} {
+      allow read, write, delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
     }
     
-    // Test koleksiyonu (geliştirme için)
-    match /test_users/{document} {
-      allow read, write: if true;
+    // Diyet tüketimleri koleksiyonu
+    match /diet_intakes/{intakeId} {
+      allow read, write, delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
     }
   }
 }

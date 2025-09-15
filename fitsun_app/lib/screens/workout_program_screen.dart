@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/user_model.dart';
 import '../models/workout_program.dart';
+import '../models/workout_model.dart';
 import '../services/gemini_service.dart';
+import '../services/workout_tracking_service.dart';
 
 class WorkoutProgramScreen extends StatefulWidget {
   final UserModel userProfile;
@@ -1158,19 +1161,52 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
     try {
       print('💾 Antrenman oturumu kaydediliyor...');
 
-      final session = {
-        'dayName': day.dayName,
-        'focus': day.focus,
-        'exercises': completedExercises.map((e) => e.toMap()).toList(),
-        'completedAt': DateTime.now().toIso8601String(),
-        'userId': widget.userProfile.id,
-      };
+      // WorkoutTrackingService kullanarak kaydet
+      final sessionId = await WorkoutTrackingService.startWorkoutSession(
+        userId: widget.userProfile.id,
+        programId: _workoutProgram?.id ?? 'unknown',
+        programName: _workoutProgram?.programName ?? 'Bilinmeyen Program',
+        dayName: day.dayName,
+        dayNumber: 1, // Basit olarak 1 kullanıyoruz
+        date: DateTime.now(),
+      );
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.userProfile.id)
-          .collection('workout_sessions')
-          .add(session);
+      // Egzersizleri ekle
+      for (final exercise in completedExercises) {
+        if (exercise.completed) {
+          await WorkoutTrackingService.updateExerciseInSession(
+            sessionId: sessionId,
+            exerciseName: exercise.name,
+            exerciseSession: ExerciseSession(
+              exerciseName: exercise.name,
+              plannedSets: exercise.sets,
+              completedSets: exercise.sets,
+              plannedReps: exercise.reps,
+              completedReps: exercise.reps,
+              plannedWeight: exercise.weight?.toDouble() ?? 0.0,
+              completedWeight: exercise.weight?.toDouble() ?? 0.0,
+              restTime: exercise.restSeconds,
+              setDetails: [
+                SetDetail(
+                  setNumber: 1,
+                  reps: exercise.reps,
+                  weight: exercise.weight?.toDouble() ?? 0.0,
+                  restTime: exercise.restSeconds,
+                  isCompleted: true,
+                  notes: 'Tamamlandı',
+                ),
+              ],
+              isCompleted: true,
+            ),
+          );
+        }
+      }
+
+      // Antrenmanı tamamla
+      await WorkoutTrackingService.completeWorkoutSession(
+        sessionId: sessionId,
+        notes: '${day.dayName} - ${day.focus}',
+      );
 
       _showSuccessSnackBar('✅ Antrenman tamamlandı ve kaydedildi!');
       print('✅ Antrenman oturumu kaydedildi');
@@ -1277,24 +1313,88 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
         child: Column(
           children: [
             // Başlık
-            Text(
-              'Antrenman: ${widget.day.dayName}',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              widget.day.focus,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.fitness_center,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Antrenman: ${widget.day.dayName}',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.day.focus,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
 
             // İlerleme
-            LinearProgressIndicator(
-              value: (_currentExerciseIndex + 1) / _completedExercises.length,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'İlerleme',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        '${_currentExerciseIndex + 1}/${_completedExercises.length}',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value:
+                        (_currentExerciseIndex + 1) /
+                        _completedExercises.length,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -1403,6 +1503,8 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
 
   Widget _buildCompletionScreen() {
     final completedCount = _completedExercises.where((e) => e.completed).length;
+    final completionPercentage =
+        (completedCount / _completedExercises.length) * 100;
 
     return Dialog(
       child: Container(
@@ -1411,18 +1513,52 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, size: 64, color: Colors.green),
-            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle,
+                size: 64,
+                color: Colors.green,
+              ),
+            ),
+            const SizedBox(height: 20),
             Text(
               'Antrenman Tamamlandı!',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$completedCount/${_completedExercises.length} egzersiz tamamlandı',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: completionPercentage / 100,
+              backgroundColor: Colors.grey[300],
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
             ),
             const SizedBox(height: 8),
             Text(
-              '$completedCount/${_completedExercises.length} egzersiz tamamlandı',
-              style: Theme.of(context).textTheme.bodyLarge,
+              '${completionPercentage.toStringAsFixed(1)}% Tamamlandı',
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
             Row(
@@ -1430,16 +1566,24 @@ class _WorkoutSessionDialogState extends State<WorkoutSessionDialog> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                     child: const Text('İptal'),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
                       widget.onWorkoutCompleted(_completedExercises);
                       Navigator.pop(context);
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                     child: const Text('Kaydet'),
                   ),
                 ),

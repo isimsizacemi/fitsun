@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/statistics_service.dart';
 import '../services/water_tracking_service.dart';
+import '../services/workout_tracking_service.dart';
 
 class DailyTrackingScreen extends StatefulWidget {
   const DailyTrackingScreen({super.key});
@@ -713,11 +714,185 @@ class _DailyTrackingScreenState extends State<DailyTrackingScreen> {
   }
 
   void _addWorkout() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Antrenman ekleme özelliği yakında!'),
-        backgroundColor: Colors.orange,
-      ),
+    showDialog(
+      context: context,
+      builder: (context) => _buildWorkoutDialog(),
     );
+  }
+
+  Widget _buildWorkoutDialog() {
+    return AlertDialog(
+      title: Text(
+        'Antrenman Ekle',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Bugün hangi antrenmanı yaptın?',
+            style: GoogleFonts.poppins(),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToWorkoutPrograms();
+            },
+            icon: const Icon(Icons.fitness_center),
+            label: const Text('Antrenman Programı'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _addQuickWorkout();
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Hızlı Antrenman'),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('İptal'),
+        ),
+      ],
+    );
+  }
+
+  void _navigateToWorkoutPrograms() {
+    // Antrenman programları ekranına git
+    Navigator.pushNamed(context, '/workout-programs');
+  }
+
+  void _addQuickWorkout() {
+    // Hızlı antrenman ekleme dialog'u
+    showDialog(
+      context: context,
+      builder: (context) => _buildQuickWorkoutDialog(),
+    );
+  }
+
+  Widget _buildQuickWorkoutDialog() {
+    return _QuickWorkoutDialog(
+      onSave: _saveQuickWorkout,
+    );
+  }
+
+  Future<void> _saveQuickWorkout(String exerciseName, int duration) async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final userId = authService.currentUser?.id;
+
+      if (userId == null || userId.isEmpty) return;
+
+      // Basit bir antrenman oturumu oluştur
+      final sessionId = await WorkoutTrackingService.startWorkoutSession(
+        userId: userId,
+        programId: 'quick_workout',
+        programName: 'Hızlı Antrenman',
+        dayName: 'Hızlı Antrenman',
+        dayNumber: 1,
+        date: _selectedDate,
+      );
+
+      // Antrenmanı tamamla
+      await WorkoutTrackingService.completeWorkoutSession(
+        sessionId: sessionId,
+        notes: '$exerciseName - ${duration} dakika',
+      );
+
+      _loadDailyScores();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$exerciseName antrenmanı eklendi!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
+class _QuickWorkoutDialog extends StatefulWidget {
+  final Function(String exerciseName, int duration) onSave;
+
+  const _QuickWorkoutDialog({required this.onSave});
+
+  @override
+  State<_QuickWorkoutDialog> createState() => _QuickWorkoutDialogState();
+}
+
+class _QuickWorkoutDialogState extends State<_QuickWorkoutDialog> {
+  final exerciseController = TextEditingController();
+  int duration = 30;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(
+        'Hızlı Antrenman',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: exerciseController,
+            decoration: const InputDecoration(
+              labelText: 'Egzersiz Adı',
+              hintText: 'Örn: Push-up, Squat',
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Süre: ${duration} dakika',
+            style: GoogleFonts.poppins(),
+          ),
+          Slider(
+            value: duration.toDouble(),
+            min: 5,
+            max: 120,
+            divisions: 23,
+            label: '${duration} dakika',
+            onChanged: (value) {
+              setState(() {
+                duration = value.round();
+              });
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('İptal'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (exerciseController.text.isNotEmpty) {
+              Navigator.pop(context);
+              widget.onSave(exerciseController.text, duration);
+            }
+          },
+          child: const Text('Kaydet'),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    exerciseController.dispose();
+    super.dispose();
   }
 }
