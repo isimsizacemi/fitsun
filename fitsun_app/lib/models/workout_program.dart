@@ -107,6 +107,7 @@ class WorkoutProgram {
   final int durationWeeks;
   final List<WorkoutDay> weeklySchedule;
   final String difficulty;
+  final bool isActive;
   final DateTime createdAt;
   final Map<String, dynamic>? metadata;
 
@@ -118,6 +119,7 @@ class WorkoutProgram {
     required this.durationWeeks,
     required this.weeklySchedule,
     required this.difficulty,
+    this.isActive = false,
     required this.createdAt,
     this.metadata,
   });
@@ -135,6 +137,7 @@ class WorkoutProgram {
               .toList() ??
           [],
       difficulty: map['difficulty'] ?? '',
+      isActive: map['isActive'] ?? false,
       createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
       metadata: map['metadata'],
     );
@@ -148,6 +151,7 @@ class WorkoutProgram {
       'durationWeeks': durationWeeks,
       'weeklySchedule': weeklySchedule.map((e) => e.toMap()).toList(),
       'difficulty': difficulty,
+      'isActive': isActive,
       'createdAt': createdAt,
       'metadata': metadata,
     };

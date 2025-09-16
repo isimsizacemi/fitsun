@@ -47,6 +47,9 @@ dependencies:
   # State management
   provider: ^6.1.2
   
+  # Local storage
+  shared_preferences: ^2.2.2
+  
   # UI components
   google_fonts: ^6.2.1
   

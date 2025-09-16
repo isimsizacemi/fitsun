@@ -85,6 +85,7 @@ class GeminiService {
             1,
         difficulty: _determineDifficulty(programData),
         weeklySchedule: _parseWeeklySchedule(programData['weeks']),
+        isActive: true, // Yeni oluşturulan program aktif
         createdAt: DateTime.now(),
         metadata: programData,
       );
@@ -107,9 +108,94 @@ class GeminiService {
           .set(program.toMap());
       print('✅ Program Firebase\'e kaydedildi');
 
+      // Spor programına uygun diyet planı oluştur
+      print('🍎 Spor programına uygun diyet planı oluşturuluyor...');
+      try {
+        final dietPlan = await generateDietPlan(
+          user,
+          customPrompt:
+              'Bu spor programına uygun beslenme planı: ${program.programName}. Antrenman günlerinde daha fazla protein ve karbonhidrat, dinlenme günlerinde daha az kalori.',
+        );
+
+        if (dietPlan != null) {
+          print('✅ Diyet planı oluşturuldu');
+        }
+      } catch (e) {
+        print('⚠️ Diyet planı oluşturulamadı: $e');
+        // Diyet planı oluşturulamasa bile spor programı başarılı
+      }
+
       return program;
     } catch (e) {
       print('Spor programı oluşturma hatası: $e');
+      return null;
+    }
+  }
+
+  // Spor programını aktifleştir (diğerlerini pasifleştir)
+  static Future<bool> activateWorkoutProgram(
+    String userId,
+    String programId,
+  ) async {
+    try {
+      print('🔄 Spor programı aktifleştiriliyor...');
+      print('👤 User ID: $userId');
+      print('📋 Program ID: $programId');
+
+      // Önce tüm programları pasifleştir
+      final allPrograms = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('programs')
+          .get();
+
+      for (var doc in allPrograms.docs) {
+        await doc.reference.update({'isActive': false});
+      }
+
+      // Seçilen programı aktifleştir
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('programs')
+          .doc(programId)
+          .update({'isActive': true});
+
+      print('✅ Spor programı aktifleştirildi');
+      return true;
+    } catch (e) {
+      print('❌ Spor programı aktifleştirme hatası: $e');
+      return false;
+    }
+  }
+
+  // Aktif spor programını getir
+  static Future<WorkoutProgram?> getActiveWorkoutProgram(String userId) async {
+    try {
+      print('🔍 Aktif spor programı getiriliyor...');
+      print('👤 User ID: $userId');
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('programs')
+          .where('isActive', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final program = WorkoutProgram.fromMap(
+          snapshot.docs.first.data(),
+          snapshot.docs.first.id,
+        );
+        print('✅ Aktif spor programı bulundu: ${program.programName}');
+        return program;
+      } else {
+        print('⚠️ Aktif spor programı bulunamadı');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Aktif spor programı getirme hatası: $e');
       return null;
     }
   }
@@ -345,6 +431,7 @@ Kullanıcı Profil Bilgileri:
 - Mevcut Ekipmanlar: ${user.availableEquipment?.join(', ') ?? 'Yok'}
 
 Bu detaylı kullanıcı profil bilgilerine göre ${user.weeklyFrequency ?? 3} günlük, kişiselleştirilmiş bir spor programı oluştur. Program, kullanıcının fiziksel özelliklerini, hedeflerini, mevcut ekipmanlarını ve deneyim seviyesini dikkate almalıdır.
+
 
 ${customPrompt != null && customPrompt.isNotEmpty ? '''
 ÖNEMLİ ÖZEL İSTEKLER:

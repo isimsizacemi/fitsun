@@ -328,7 +328,13 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Spor Programı'),
+        title: Text(
+          'Spor Programları',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Colors.orange.shade600,
+        foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
@@ -361,26 +367,96 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Başlık ve Yeni Program Butonu
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Spor Programlarım',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+          // Hoş Geldin Kartı
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.orange.shade50, Colors.orange.shade100],
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _showCreateForm = true; // Create form'a git
-                  });
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Yeni Program'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.fitness_center,
+                          color: Colors.orange.shade700,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Spor Programlarım',
+                              style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Kişiselleştirilmiş antrenman programlarınız',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.orange.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _showCreateForm = true;
+                        });
+                      },
+                      icon: const Icon(Icons.add_circle_outline, size: 20),
+                      label: Text(
+                        'Spor + Diyet Programı Oluştur',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -401,35 +477,77 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   // Boş durum ekranı
   Widget _buildEmptyState() {
     return Card(
-      child: Padding(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
         padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue.shade50, Colors.blue.shade100],
+          ),
+        ),
         child: Column(
           children: [
-            Icon(Icons.fitness_center, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              'Henüz programınız yok',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'AI ile size özel bir spor programı oluşturun',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[500]),
-              textAlign: TextAlign.center,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade200,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Icon(
+                Icons.fitness_center_outlined,
+                size: 64,
+                color: Colors.blue.shade700,
+              ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  _workoutProgram = null; // Generate screen'e git
-                });
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('İlk Programımı Oluştur'),
+            Text(
+              'Henüz programınız yok',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'AI ile size özel bir spor + diyet programı oluşturun',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.blue.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _showCreateForm = true;
+                  });
+                },
+                icon: const Icon(Icons.add_circle_outline, size: 20),
+                label: Text(
+                  'İlk Programımı Oluştur',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade600,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+              ),
             ),
           ],
         ),
@@ -906,68 +1024,135 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
   Widget _buildProgramCard(WorkoutProgram program) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () {
           setState(() => _workoutProgram = program);
         },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: program.isActive
+                  ? [Colors.green.shade50, Colors.green.shade100]
+                  : [Colors.grey.shade50, Colors.grey.shade100],
+            ),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      program.programName,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.1),
+                      color: program.isActive
+                          ? Colors.green.shade200
+                          : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      '${program.durationWeeks} hafta',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Icon(
+                      Icons.fitness_center,
+                      color: program.isActive
+                          ? Colors.green.shade700
+                          : Colors.grey.shade600,
+                      size: 24,
                     ),
                   ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          program.programName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: program.isActive
+                                ? Colors.green.shade700
+                                : Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          program.description,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: program.isActive
+                                ? Colors.green.shade600
+                                : Colors.grey.shade600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (program.isActive)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'AKTİF',
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                program.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  _buildInfoChip(
+                    '${program.durationWeeks} hafta',
+                    Icons.calendar_today,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(
+                    _getDifficultyText(program.difficulty),
+                    Icons.trending_up,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(
+                    '${program.weeklySchedule.length} gün',
+                    Icons.schedule,
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                  Icon(
+                    Icons.access_time,
+                    size: 16,
+                    color: program.isActive
+                        ? Colors.green.shade600
+                        : Colors.grey.shade600,
+                  ),
                   const SizedBox(width: 4),
                   Text(
-                    '${program.weeklySchedule.length} gün/hafta',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                  const Spacer(),
-                  Text(
-                    _formatDate(program.createdAt),
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    'Oluşturulma: ${_formatDate(program.createdAt)}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: program.isActive
+                          ? Colors.green.shade600
+                          : Colors.grey.shade600,
+                    ),
                   ),
                 ],
               ),
@@ -976,6 +1161,19 @@ class _WorkoutProgramScreenState extends State<WorkoutProgramScreen> {
         ),
       ),
     );
+  }
+
+  String _getDifficultyText(String difficulty) {
+    switch (difficulty) {
+      case 'beginner':
+        return 'Başlangıç';
+      case 'intermediate':
+        return 'Orta';
+      case 'advanced':
+        return 'İleri';
+      default:
+        return difficulty;
+    }
   }
 
   // Program detay ekranı

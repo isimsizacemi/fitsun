@@ -12,6 +12,8 @@ import 'workout_program_screen.dart';
 import 'program_detail_screen.dart';
 import 'exercise_guide_screen.dart';
 import 'workout_history_screen.dart';
+import 'daily_tracking_screen.dart';
+import 'statistics_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   UserModel? _userProfile;
   List<WorkoutProgram> _userPrograms = [];
+  WorkoutProgram? _activeWorkoutProgram;
   bool _isLoading = true;
   bool _isLoadingPrograms = false;
 
@@ -31,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUserProfile();
     _loadUserPrograms();
+    _loadActiveProgram();
   }
 
   Future<void> _loadUserProfile() async {
@@ -63,13 +67,31 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       print('✅ ${programs.length} program yüklendi');
       for (var program in programs) {
-        print('  📝 ${program.programName} - ${program.durationWeeks} hafta');
+        print(
+          '  📝 ${program.programName} - ${program.durationWeeks} hafta - Aktif: ${program.isActive}',
+        );
       }
       setState(() => _userPrograms = programs);
     } catch (e) {
       print('❌ Programlar yüklenirken hata: $e');
     } finally {
       setState(() => _isLoadingPrograms = false);
+    }
+  }
+
+  Future<void> _loadActiveProgram() async {
+    if (_userProfile == null) {
+      print('❌ UserProfile null, aktif program yüklenemiyor');
+      return;
+    }
+
+    try {
+      final activeProgram = await GeminiService.getActiveWorkoutProgram(
+        _userProfile!.id,
+      );
+      setState(() => _activeWorkoutProgram = activeProgram);
+    } catch (e) {
+      print('❌ Aktif program yüklenirken hata: $e');
     }
   }
 
@@ -159,6 +181,84 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 24),
 
+                  // Aktif Program Kartı
+                  if (_activeWorkoutProgram != null) ...[
+                    Card(
+                      color: Colors.green.shade50,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.fitness_center,
+                                  color: Colors.green.shade700,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Aktif Spor Programı',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green.shade700,
+                                      ),
+                                ),
+                                const Spacer(),
+                                Chip(
+                                  label: const Text(
+                                    'AKTİF',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.green.shade100,
+                                  labelStyle: TextStyle(
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _activeWorkoutProgram!.programName,
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              _activeWorkoutProgram!.description,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                _buildProgramChip(
+                                  '${_activeWorkoutProgram!.durationWeeks} hafta',
+                                  Icons.calendar_today,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildProgramChip(
+                                  _getDifficultyText(
+                                    _activeWorkoutProgram!.difficulty,
+                                  ),
+                                  Icons.trending_up,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildProgramChip(
+                                  '${_activeWorkoutProgram!.weeklySchedule.length} gün',
+                                  Icons.schedule,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
                   // Program Oluştur Butonu
                   SizedBox(
                     width: double.infinity,
@@ -179,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                       },
                       icon: const Icon(Icons.add_circle_outline),
-                      label: const Text('Yeni Program Oluştur'),
+                      label: const Text('Spor + Diyet Programı Oluştur'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -239,8 +339,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.water_drop,
                         color: Colors.blue,
                         onTap: () {
-                          // Su takibi ekranına git
-                          _showWaterTrackingDialog(context);
+                          // Günlük takip ekranına git
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DailyTrackingScreen(),
+                            ),
+                          );
                         },
                       ),
 
@@ -251,18 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.fitness_center,
                         color: Colors.orange,
                         onTap: () {
-                          // Antrenman takibi ekranına git
-                          _showWorkoutTrackingDialog(context);
-                        },
-                      ),
-
-                      // Antrenman Geçmişi Kartı
-                      _buildQuickAccessCard(
-                        context: context,
-                        title: 'Antrenman Geçmişi',
-                        icon: Icons.history,
-                        color: Colors.indigo,
-                        onTap: () {
+                          // Antrenman geçmişi ekranına git
                           if (_userProfile != null) {
                             Navigator.push(
                               context,
@@ -276,15 +370,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
 
+                      // Günlük Takip Kartı
+                      _buildQuickAccessCard(
+                        context: context,
+                        title: 'Günlük Takip',
+                        icon: Icons.today,
+                        color: Colors.indigo,
+                        onTap: () {
+                          // Günlük takip ekranına git
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DailyTrackingScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
                       // Beslenme Takibi Kartı
                       _buildQuickAccessCard(
                         context: context,
-                        title: 'Beslenme',
+                        title: 'Beslenme\n(Spor ile Senkron)',
                         icon: Icons.restaurant,
                         color: Colors.green,
                         onTap: () {
                           // Beslenme takibi ekranına git
-                          _showNutritionTrackingDialog(context);
+                          Navigator.pushNamed(context, '/diet-plan');
                         },
                       ),
 
@@ -296,7 +407,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.purple,
                         onTap: () {
                           // İstatistikler ekranına git
-                          _showStatisticsDialog(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const StatisticsScreen(),
+                            ),
+                          );
                         },
                       ),
                     ],
@@ -409,9 +525,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProgramCard(WorkoutProgram program) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: program.isActive ? Colors.green.shade50 : null,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
+          backgroundColor: program.isActive
+              ? Colors.green
+              : Theme.of(context).colorScheme.primary,
           child: Icon(Icons.fitness_center, color: Colors.white),
         ),
         title: Text(
@@ -422,6 +541,11 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(program.description),
+            const SizedBox(height: 4),
+            Text(
+              'Oluşturulma: ${_formatDate(program.createdAt)}',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -439,6 +563,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   '${program.weeklySchedule.length} gün',
                   Icons.schedule,
                 ),
+                if (program.isActive) ...[
+                  const SizedBox(width: 8),
+                  _buildProgramChip('AKTİF', Icons.check_circle),
+                ],
               ],
             ),
           ],
@@ -446,6 +574,9 @@ class _HomeScreenState extends State<HomeScreen> {
         trailing: PopupMenuButton<String>(
           onSelected: (value) {
             switch (value) {
+              case 'activate':
+                _activateProgram(program);
+                break;
               case 'view':
                 _viewProgram(program);
                 break;
@@ -458,6 +589,17 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
           itemBuilder: (context) => [
+            if (!program.isActive)
+              const PopupMenuItem(
+                value: 'activate',
+                child: Row(
+                  children: [
+                    Icon(Icons.play_arrow, color: Colors.green),
+                    SizedBox(width: 8),
+                    Text('Aktifleştir', style: TextStyle(color: Colors.green)),
+                  ],
+                ),
+              ),
             const PopupMenuItem(
               value: 'view',
               child: Row(
@@ -502,6 +644,36 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
+  }
+
+  Future<void> _activateProgram(WorkoutProgram program) async {
+    try {
+      final success = await GeminiService.activateWorkoutProgram(
+        _userProfile!.id,
+        program.id,
+      );
+      if (success) {
+        _loadActiveProgram(); // Aktif programı yenile
+        _loadUserPrograms(); // Program listesini yenile
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${program.programName} aktifleştirildi!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Program aktifleştirilemedi'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   void _viewProgram(WorkoutProgram program) {
@@ -655,6 +827,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date).inDays;
+
+    if (difference == 0) {
+      return 'Bugün';
+    } else if (difference == 1) {
+      return 'Dün';
+    } else if (difference < 7) {
+      return '$difference gün önce';
+    } else if (difference < 30) {
+      final weeks = (difference / 7).floor();
+      return '$weeks hafta önce';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
   // Hızlı Erişim Kartı Widget'ı
   Widget _buildQuickAccessCard({
     required BuildContext context,
@@ -712,148 +902,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Su Takibi Dialog'u
-  void _showWaterTrackingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Su Takibi'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Su tüketiminizi takip edin ve hedeflerinize ulaşın!'),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Su ekleme ekranına git
-                    _showAddWaterDialog(context);
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Su Ekle'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Su geçmişi ekranına git
-                    _showWaterHistoryDialog(context);
-                  },
-                  icon: const Icon(Icons.history),
-                  label: const Text('Geçmiş'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Antrenman Takibi Dialog'u
-  void _showWorkoutTrackingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Antrenman Takibi'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Antrenmanlarınızı kaydedin ve ilerlemenizi takip edin!',
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Yeni antrenman ekranına git
-                    _showNewWorkoutDialog(context);
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Antrenman'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Antrenman geçmişi ekranına git
-                    _showWorkoutHistoryDialog(context);
-                  },
-                  icon: const Icon(Icons.history),
-                  label: const Text('Geçmiş'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Beslenme Takibi Dialog'u
-  void _showNutritionTrackingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Beslenme Takibi'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Beslenme planınızı takip edin ve hedeflerinize ulaşın!',
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Beslenme ekleme ekranına git
-                    _showAddNutritionDialog(context);
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Yemek Ekle'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Beslenme geçmişi ekranına git
-                    _showNutritionHistoryDialog(context);
-                  },
-                  icon: const Icon(Icons.history),
-                  label: const Text('Geçmiş'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
-
   // İstatistikler Dialog'u
   void _showStatisticsDialog(BuildContext context) {
     showDialog(
@@ -900,202 +948,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Su Ekleme Dialog'u
-  void _showAddWaterDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Su Ekle'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Ne kadar su içtiniz?'),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('250ml su eklendi! 💧');
-                  },
-                  child: const Text('250ml'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('500ml su eklendi! 💧');
-                  },
-                  child: const Text('500ml'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('1000ml su eklendi! 💧');
-                  },
-                  child: const Text('1000ml'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Su Geçmişi Dialog'u
-  void _showWaterHistoryDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Su Geçmişi'),
-        content: const Text('Su tüketim geçmişiniz burada görünecek.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Yeni Antrenman Dialog'u
-  void _showNewWorkoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Yeni Antrenman'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Hangi tür antrenman yaptınız?'),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('Kardiyo antrenmanı kaydedildi! 🏃‍♂️');
-                  },
-                  icon: const Icon(Icons.directions_run),
-                  label: const Text('Kardiyo'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('Güç antrenmanı kaydedildi! 💪');
-                  },
-                  icon: const Icon(Icons.fitness_center),
-                  label: const Text('Güç'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Antrenman Geçmişi Dialog'u
-  void _showWorkoutHistoryDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Antrenman Geçmişi'),
-        content: const Text('Antrenman geçmişiniz burada görünecek.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Beslenme Ekleme Dialog'u
-  void _showAddNutritionDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Beslenme Ekle'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Hangi öğünü eklemek istiyorsunuz?'),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('Kahvaltı eklendi! 🍳');
-                  },
-                  icon: const Icon(Icons.breakfast_dining),
-                  label: const Text('Kahvaltı'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('Öğle yemeği eklendi! 🍽️');
-                  },
-                  icon: const Icon(Icons.lunch_dining),
-                  label: const Text('Öğle'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showSuccessMessage('Akşam yemeği eklendi! 🍽️');
-                  },
-                  icon: const Icon(Icons.dinner_dining),
-                  label: const Text('Akşam'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Beslenme Geçmişi Dialog'u
-  void _showNutritionHistoryDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Beslenme Geçmişi'),
-        content: const Text('Beslenme geçmişiniz burada görünecek.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
-
   // Haftalık İstatistikler Dialog'u
   void _showWeeklyStatsDialog(BuildContext context) {
     showDialog(
@@ -1131,15 +983,4 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Başarı Mesajı Göster
-  void _showSuccessMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
 }

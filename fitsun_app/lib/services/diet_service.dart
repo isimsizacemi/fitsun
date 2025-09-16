@@ -70,6 +70,7 @@ class DietService {
     double? targetCarbs,
     double? targetFat,
     bool? isActive,
+    String? programId,
     List<Meal>? meals,
   }) async {
     try {
@@ -88,6 +89,7 @@ class DietService {
       if (targetCarbs != null) updateData['targetCarbs'] = targetCarbs;
       if (targetFat != null) updateData['targetFat'] = targetFat;
       if (isActive != null) updateData['isActive'] = isActive;
+      if (programId != null) updateData['programId'] = programId;
       if (meals != null) updateData['meals'] = meals.map((m) => m.toMap()).toList();
       
       await _dietPlansCollection.doc(dietId).update(updateData);
@@ -495,5 +497,58 @@ class DietService {
         'fat': targetFat - currentFat,
       },
     };
+  }
+
+  // Diyet planını aktifleştir (diğerlerini pasifleştir)
+  static Future<bool> activateDietPlan(String userId, String dietId) async {
+    try {
+      print('🔄 Diyet planı aktifleştiriliyor...');
+      print('👤 User ID: $userId');
+      print('📋 Diet ID: $dietId');
+
+      // Önce tüm diyet planlarını pasifleştir
+      final allDiets = await _dietPlansCollection
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (var doc in allDiets.docs) {
+        await doc.reference.update({'isActive': false});
+      }
+
+      // Seçilen diyet planını aktifleştir
+      await _dietPlansCollection.doc(dietId).update({'isActive': true});
+
+      print('✅ Diyet planı aktifleştirildi');
+      return true;
+    } catch (e) {
+      print('❌ Diyet planı aktifleştirme hatası: $e');
+      return false;
+    }
+  }
+
+  // Aktif diyet planını getir
+  static Future<DietPlan?> getActiveDietPlan(String userId) async {
+    try {
+      print('🔍 Aktif diyet planı getiriliyor...');
+      print('👤 User ID: $userId');
+
+      final snapshot = await _dietPlansCollection
+          .where('userId', isEqualTo: userId)
+          .where('isActive', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final dietPlan = DietPlan.fromFirestore(snapshot.docs.first);
+        print('✅ Aktif diyet planı bulundu: ${dietPlan.title}');
+        return dietPlan;
+      } else {
+        print('⚠️ Aktif diyet planı bulunamadı');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Aktif diyet planı getirme hatası: $e');
+      return null;
+    }
   }
 }
