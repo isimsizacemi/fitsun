@@ -273,9 +273,9 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 
 ## 👨‍💻 Geliştirici
 
-**Abdurrahman** - *Full Stack Developer*
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Abdurrahman](https://linkedin.com/in/yourprofile)
+**Abdurrahman** - *NO Developer*
+- GitHub: (https://github.com/isimsizacemi)
+- LinkedIn: [Abdurrahman](https://www.linkedin.com/in/abdurrahman-özkan-155a58228)
 
 ## 🙏 Teşekkürler
 
@@ -288,7 +288,7 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 
 Proje hakkında sorularınız için:
 - Email: your.email@example.com
-- LinkedIn: [Abdurrahman](https://linkedin.com/in/yourprofile)
+- LinkedIn: [Abdurrahman]()
 
 ---
 
