@@ -287,8 +287,8 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 ## 📞 İletişim
 
 Proje hakkında sorularınız için:
-- Email: your.email@example.com
-- LinkedIn: [Abdurrahman]()
+- Email: abdurrahman19ozkan@gmail.com
+- LinkedIn: [Abdurrahman](https://www.linkedin.com/in/abdurrahman-özkan-155a58228)
 
 ---
 
