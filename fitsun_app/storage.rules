@@ -1,9 +1,0 @@
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    // Tüm dosyalar için basit kurallar
-    match /{allPaths=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}

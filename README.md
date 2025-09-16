@@ -348,9 +348,9 @@ Uygulamayı hemen denemek için APK dosyasını indirin:
 
 ## 👨‍💻 Geliştirici
 
-**Abdurrahman** - *Full Stack Developer*
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Abdurrahman](https://linkedin.com/in/yourprofile)
+**Abdurrahman** - *NO Developer*
+- GitHub: (https://github.com/isimsizacemi)
+- LinkedIn: [Abdurrahman](https://www.linkedin.com/in/abdurrahman-özkan-155a58228)
 
 ## 🙏 Teşekkürler
 
@@ -362,8 +362,8 @@ Uygulamayı hemen denemek için APK dosyasını indirin:
 ## 📞 İletişim
 
 Proje hakkında sorularınız için:
-- Email: your.email@example.com
-- LinkedIn: [Abdurrahman](https://linkedin.com/in/yourprofile)
+- Email: abdurrahman19ozkan@gmail.com
+- LinkedIn: [Abdurrahman](https://www.linkedin.com/in/abdurrahman-özkan-155a58228)
 
 ---
 
