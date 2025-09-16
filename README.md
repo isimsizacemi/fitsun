@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🏋️‍♂️ FitSun - AI-Powered Fitness Companion
 
 <div align="center">
@@ -496,6 +495,34 @@ fitSun/
 4. Push yapın (`git push origin feature/amazing-feature`)
 5. Pull Request oluşturun
 
+## 📱 APK İndirme
+
+### 🚀 Hemen Deneyin!
+
+Uygulamayı hemen denemek için APK dosyasını indirin:
+
+[![Download APK](https://img.shields.io/badge/Download-APK-brightgreen?style=for-the-badge&logo=android)](https://github.com/isimsizacemi/fitsun/releases/download/v1.0.0/FitSun-v1.0.0.apk)
+
+### 📋 Kurulum Adımları:
+
+1. **APK'yı indirin** - Yukarıdaki butona tıklayın
+2. **Bilinmeyen kaynaklara izin verin** - Ayarlar > Güvenlik > Bilinmeyen kaynaklar
+3. **APK'yı yükleyin** - İndirilen dosyaya tıklayın
+4. **Uygulamayı açın** - FitSun'i kullanmaya başlayın!
+
+### 🔒 Güvenlik:
+- APK dosyası güvenlidir
+- Kaynak kodu açık
+- Firebase ile güvenli kimlik doğrulama
+- Kişisel verileriniz gizli tutulur
+
+### 📊 APK Bilgileri:
+- **Boyut**: ~55MB
+- **Android Sürümü**: 5.0+ (API 21+)
+- **Güncelleme Tarihi**: Son sürüm
+- **Sürüm**: 1.0.0
+- **Uygulama Adı**: FitSun
+
 ## 📄 Lisans
 
 Bu proje MIT lisansı altında lisanslanmıştır.
@@ -507,4 +534,3 @@ Proje hakkında sorularınız için issue açabilirsiniz.
 ---
 
 **Not**: Bu uygulama geliştirme amaçlıdır. Production kullanımı için güvenlik ve performans optimizasyonları yapılmalıdır.
->>>>>>> 33cc310b69a5403b69427bf52773497b0eda78ee
