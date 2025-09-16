@@ -2,15 +2,17 @@
 # 🏋️‍♂️ FitSun - AI-Powered Fitness Companion
 
 <div align="center">
+  <img src="https://img.shields.io/badge/Flutter-3.8.1-blue?style=for-the-badge&logo=flutter" alt="Flutter">
+  <img src="https://img.shields.io/badge/Firebase-9.0.0-orange?style=for-the-badge&logo=firebase" alt="Firebase">
+  <img src="https://img.shields.io/badge/Google%20AI-Gemini-purple?style=for-the-badge&logo=google" alt="Google AI">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+</div>
 
-![FitSun Logo](assets/logo.png)
-
-**Kişiselleştirilmiş AI destekli fitness ve beslenme uygulaması**
-
-[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
-[![Google AI](https://img.shields.io/badge/Google%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
-
+<div align="center">
+  <h3>🏋️‍♂️ Kişiselleştirilmiş AI Destekli Fitness Uygulaması</h3>
+  <p>Google Gemini AI ile özel antrenman ve beslenme programları oluşturun</p>
+  
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/isimsizacemi/fitsun)
 </div>
 
 ## 📱 Uygulama Özellikleri
@@ -63,106 +65,151 @@
 - **Responsive Design**: Tüm ekran boyutlarına uyumlu
 - **Dark/Light Theme**: Tema desteği
 
-## 📸 Ekran Görüntüleri
+## 📱 Uygulama Görünümü
 
-### 🔐 Kimlik Doğrulama Ekranları
 <div align="center">
-
-| Giriş Yapma | Kayıt Olma | Profil Düzenleme |
-|-------------|------------|------------------|
-| ![Login Screen](screenshots/login.jpg) | ![Register Screen](screenshots/register.jpg) | ![Profile Edit](screenshots/profil%20düzenle.jpg) |
-
+  <img src="assets/logo.png" alt="FitSun Logo" width="200">
+  
+  <h4>🎯 Ana Özellikler</h4>
+  
+  <table>
+    <tr>
+      <td align="center">
+        <img src="screenshots/login.jpg" alt="Giriş Ekranı" width="200">
+        <br><strong>🔑 Giriş Ekranı</strong>
+        <br><small>Firebase Authentication ile güvenli giriş</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/register.jpg" alt="Kayıt Ekranı" width="200">
+        <br><strong>📝 Kayıt Ekranı</strong>
+        <br><small>Hızlı ve kolay hesap oluşturma</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/home.jpg" alt="Ana Dashboard" width="200">
+        <br><strong>🏠 Ana Dashboard</strong>
+        <br><small>Kişiselleştirilmiş fitness merkezi</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/profil%20düzenle.jpg" alt="Profil Düzenleme" width="200">
+        <br><strong>⚙️ Profil Düzenleme</strong>
+        <br><small>Kişisel bilgileri ve hedefleri güncelleme</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/spor%20program%20oluştue.jpg" alt="AI Program Oluşturma" width="200">
+        <br><strong>🤖 AI Program Oluşturma</strong>
+        <br><small>Google Gemini AI ile kişiselleştirilmiş antrenman</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/spor%20programı%20detay%20.jpg" alt="Program Detayları" width="200">
+        <br><strong>📋 Program Detayları</strong>
+        <br><small>Haftalık görünüm ve egzersiz detayları</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/egzersiz%20rehberi.jpg" alt="Egzersiz Rehberi" width="200">
+        <br><strong>📖 Egzersiz Rehberi</strong>
+        <br><small>Kapsamlı egzersiz kütüphanesi</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/egzersiz%20nasıl%20yapılır%20detay%20.jpg" alt="Egzersiz Detayları" width="200">
+        <br><strong>💪 Egzersiz Detayları</strong>
+        <br><small>Doğru form teknikleri ve kas grupları</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/antreman%20geçmişi.jpg" alt="Antrenman Geçmişi" width="200">
+        <br><strong>📈 Antrenman Geçmişi</strong>
+        <br><small>Tamamlanan antrenmanlar ve performans analizi</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/antreman%20geçmişi%20istatislik.jpg" alt="Antrenman İstatistikleri" width="200">
+        <br><strong>📊 Antrenman İstatistikleri</strong>
+        <br><small>Detaylı performans metrikleri</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/antreman%20geçmişi%20grafikler.jpg" alt="Antrenman Grafikleri" width="200">
+        <br><strong>📉 Antrenman Grafikleri</strong>
+        <br><small>Görsel ilerleme takibi ve trend analizi</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/diyet.jpg" alt="Beslenme Ana Ekran" width="200">
+        <br><strong>🍽️ Beslenme Ana Ekran</strong>
+        <br><small>Günlük kalori ve makro besin takibi</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/diyet%20oluştur%202%20.jpg" alt="Diyet Planı Oluşturma" width="200">
+        <br><strong>🎯 Diyet Planı Oluşturma</strong>
+        <br><small>AI destekli beslenme planları</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/diyet%20detay.jpg" alt="Diyet Detayları" width="200">
+        <br><strong>📋 Diyet Detayları</strong>
+        <br><small>Günlük öğün listesi ve besin değerleri</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/günlük%20takip%20su%20takip.jpg" alt="Günlük Takip" width="200">
+        <br><strong>💧 Günlük Takip</strong>
+        <br><small>Su tüketimi ve aktivite takibi</small>
+      </td>
+      <td align="center">
+        <img src="screenshots/istatislikler.jpg" alt="İstatistikler" width="200">
+        <br><strong>📊 İstatistikler</strong>
+        <br><small>Detaylı analizler ve grafikler</small>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" colspan="2">
+        <img src="screenshots/programlar.jpg" alt="Program Yönetimi" width="200">
+        <br><strong>📚 Program Yönetimi</strong>
+        <br><small>Tüm programlarınızı yönetin ve takip edin</small>
+      </td>
+    </tr>
+  </table>
 </div>
 
-**🔑 Giriş Ekranı**: Firebase Authentication ile güvenli giriş yapma. Email ve şifre ile kolay erişim.
-**📝 Kayıt Ekranı**: Yeni kullanıcılar için hesap oluşturma. Basit ve hızlı kayıt süreci.
-**⚙️ Profil Düzenleme**: Kişisel bilgileri güncelleme, hedefleri değiştirme ve profil fotoğrafı yükleme.
+## ✨ Özellikler
 
-### 🏠 Ana Ekranlar
-<div align="center">
+### 🤖 AI Destekli Program Oluşturma
+- **Google Gemini AI** - Kişiselleştirilmiş antrenman programları
+- **Akıllı öneriler** - Yaş, kilo, boy, aktivite seviyesi ve hedeflere göre
+- **Beslenme planları** - 7 günlük detaylı beslenme programları
+- **Özel istekler** - Kullanıcı tercihlerine göre özelleştirme
 
-| Ana Dashboard | İstatistikler |
-|---------------|---------------|
-| ![Home Screen](screenshots/home.jpg) | ![Statistics](screenshots/istatislikler.jpg) |
+### 📊 Kapsamlı Takip Sistemi
+- **Antrenman geçmişi** - Tamamlanan antrenmanların detaylı kaydı
+- **Performans analizi** - Süre, set, tekrar ve ilerleme takibi
+- **Görsel grafikler** - Trend analizi ve hedef karşılaştırmaları
+- **Su takibi** - Günlük su tüketimi ve hatırlatmalar
 
-</div>
+### 🍎 Beslenme Yönetimi
+- **Kalori takibi** - Günlük kalori ve makro besin analizi
+- **AI diyet planları** - Alerji ve kısıtlama tercihlerine göre
+- **Besin değerleri** - Detaylı besin içeriği bilgileri
+- **Öğün planlaması** - Kahvaltı, öğle, akşam ve ara öğünler
 
-**🏠 Ana Dashboard**: Kullanıcı karşılama, aktif program özeti, hızlı erişim kartları ve günlük hedefler.
-**📊 İstatistikler**: Detaylı analizler, kilo değişimi grafikleri, su tüketimi ve antrenman sıklığı takibi.
+### 🏋️‍♂️ Antrenman Rehberi
+- **Egzersiz kütüphanesi** - Kapsamlı egzersiz veritabanı
+- **Form teknikleri** - Doğru egzersiz yapma rehberi
+- **Kas grupları** - Hedeflenen kas grupları bilgisi
+- **Alternatif egzersizler** - Farklı seviye ve ekipman seçenekleri
 
-### 🏋️‍♂️ Antrenman Özellikleri
-<div align="center">
-
-| AI Program Oluşturma | Program Detayları | Egzersiz Rehberi |
-|----------------------|-------------------|------------------|
-| ![Workout Creation](screenshots/spor%20program%20oluştue.jpg) | ![Program Detail](screenshots/spor%20programı%20detay%20.jpg) | ![Exercise Guide](screenshots/egzersiz%20rehberi.jpg) |
-
-</div>
-
-**🤖 AI Program Oluşturma**: Google Gemini AI ile kişiselleştirilmiş antrenman programları. Hedef, seviye ve ekipman tercihlerine göre özel programlar.
-**📋 Program Detayları**: Oluşturulan programın haftalık görünümü, egzersiz detayları, set-tekrar bilgileri ve program yönetimi.
-**📖 Egzersiz Rehberi**: Kapsamlı egzersiz kütüphanesi, doğru form teknikleri ve kas grupları bilgisi.
-
-### 🏋️‍♂️ Antrenman Takibi
-<div align="center">
-
-| Antrenman Geçmişi | Antrenman İstatistikleri | Antrenman Grafikleri |
-|-------------------|-------------------------|---------------------|
-| ![Workout History](screenshots/antreman%20geçmişi.jpg) | ![Workout Stats](screenshots/antreman%20geçmişi%20istatislik.jpg) | ![Workout Charts](screenshots/antreman%20geçmişi%20grafikler.jpg) |
-
-</div>
-
-**📈 Antrenman Geçmişi**: Tamamlanan antrenmanların listesi, performans analizi ve ilerleme takibi.
-**📊 Antrenman İstatistikleri**: Detaylı performans metrikleri, süre analizi ve başarı oranları.
-**📉 Antrenman Grafikleri**: Görsel ilerleme takibi, trend analizi ve hedef karşılaştırmaları.
-
-### 🍎 Beslenme Özellikleri
-<div align="center">
-
-| Beslenme Ana Ekran | Diyet Planı Oluşturma | Diyet Detayları |
-|-------------------|----------------------|-----------------|
-| ![Nutrition Screen](screenshots/diyet.jpg) | ![Diet Creation](screenshots/diyet%20oluştur%202%20.jpg) | ![Diet Detail](screenshots/diyet%20detay.jpg) |
-
-</div>
-
-**🍽️ Beslenme Ana Ekran**: Günlük kalori takibi, makro besin analizi ve beslenme istatistikleri.
-**🎯 Diyet Planı Oluşturma**: AI destekli beslenme planları, alerji/kısıtlama tercihleri ve hedef kalori belirleme.
-**📋 Diyet Detayları**: Günlük öğün listesi, besin değerleri, kalori hesaplaması ve beslenme takibi.
-
-### 📊 Günlük Takip
-<div align="center">
-
-| Su Takibi ve Günlük Aktivite |
-|------------------------------|
-| ![Daily Tracking](screenshots/günlük%20takip%20su%20takip.jpg) |
-
-</div>
-
-**💧 Su Takibi**: Günlük su tüketimi takibi, hatırlatmalar ve hedef takibi.
-**📱 Günlük Aktivite**: Adım sayısı, kalori yakımı ve aktivite kayıtları.
-
-### 🎯 Program Yönetimi
-<div align="center">
-
-| Program Listesi | Program Oluşturma (Alternatif) |
-|-----------------|--------------------------------|
-| ![Programs List](screenshots/programlar.jpg) | ![Workout Creation Alt](screenshots/spor%20programı%20oluştur%202%20.jpg) |
-
-</div>
-
-**📚 Program Listesi**: Kullanıcının tüm programları, aktif/pasif durumları ve program yönetimi.
-**🔄 Program Oluşturma**: Alternatif program oluşturma arayüzü, gelişmiş tercih seçenekleri.
-
-### 🏃‍♂️ Egzersiz Detayları
-<div align="center">
-
-| Egzersiz Nasıl Yapılır |
-|------------------------|
-| ![Exercise Detail](screenshots/egzersiz%20nasıl%20yapılır%20detay%20.jpg) |
-
-</div>
-
-**💪 Egzersiz Detayları**: Tek bir egzersizin detaylı açıklaması, doğru form teknikleri, hedeflenen kas grupları ve alternatif egzersizler.
+### 🔒 Güvenlik ve Gizlilik
+- **Firebase Authentication** - Güvenli kimlik doğrulama
+- **Veri şifreleme** - Kişisel bilgilerin korunması
+- **Gizlilik kontrolü** - Veri paylaşım tercihleri
+- **Güvenli depolama** - Cloud Firestore ile güvenli veri saklama
 
 ## 🚀 Kurulum ve Çalıştırma
 
