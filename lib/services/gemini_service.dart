@@ -11,8 +11,8 @@ class GeminiService {
   static const String _geminiApiUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-  // API Key - GitHub için placeholder (gerçek key'i environment variable'dan al)
-  static const String _apiKey = 'YOUR_GEMINI_API_KEY_HERE';
+  // API Key - Demo key for APK build
+  static const String _apiKey = 'AIzaSyDemoKeyForAPKBuild123456789';
 
   // Kullanıcı profilini Firebase'e kaydet
   static Future<bool> saveUserProfile(UserModel user) async {

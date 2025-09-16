@@ -65,7 +65,7 @@
 - **Responsive Design**: Tüm ekran boyutlarına uyumlu
 - **Dark/Light Theme**: Tema desteği
 
-## 📱 Uygulama Görünümü
+knka ## 📱 Uygulama Görünümü
 
 <div align="center">
   <img src="assets/logo.png" alt="FitSun Logo" width="200">
@@ -306,6 +306,34 @@ Firestore ve Storage için güvenlik kuralları `firestore.rules` ve `storage.ru
 ## 📝 Lisans
 
 Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
+
+## 📱 APK İndirme
+
+### 🚀 Hemen Deneyin!
+
+Uygulamayı hemen denemek için APK dosyasını indirin:
+
+[![Download APK](https://img.shields.io/badge/Download-APK-brightgreen?style=for-the-badge&logo=android)](releases/FitSun-v1.0.0.apk)
+
+### 📋 Kurulum Adımları:
+
+1. **APK'yı indirin** - Yukarıdaki butona tıklayın
+2. **Bilinmeyen kaynaklara izin verin** - Ayarlar > Güvenlik > Bilinmeyen kaynaklar
+3. **APK'yı yükleyin** - İndirilen dosyaya tıklayın
+4. **Uygulamayı açın** - FitSun'i kullanmaya başlayın!
+
+### 🔒 Güvenlik:
+- APK dosyası güvenlidir
+- Kaynak kodu açık
+- Firebase ile güvenli kimlik doğrulama
+- Kişisel verileriniz gizli tutulur
+
+### 📊 APK Bilgileri:
+- **Boyut**: ~55MB
+- **Android Sürümü**: 5.0+ (API 21+)
+- **Güncelleme Tarihi**: Son sürüm
+- **Sürüm**: 1.0.0
+- **Uygulama Adı**: FitSun
 
 ## 📊 Proje İstatistikleri
 
