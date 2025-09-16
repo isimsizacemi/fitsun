@@ -1,0 +1,60 @@
+# 📸 FitSun Screenshot Dosya Adları
+
+Bu dosya, README.md'de kullanılacak screenshot dosya adlarını listeler.
+
+## 🔐 Kimlik Doğrulama Ekranları
+- auth_screen.png          # Giriş/Kayıt ekranı
+- profile_setup.png         # Profil oluşturma ekranı
+- profile_edit.png          # Profil düzenleme ekranı
+
+## 🏠 Ana Ekranlar
+- home_screen.png           # Ana dashboard
+- statistics.png             # İstatistikler ekranı
+
+## 🏋️‍♂️ Antrenman Ekranları
+- workout_program.png       # AI program oluşturma
+- program_detail.png        # Program detayları
+- exercise_guide.png         # Egzersiz rehberi
+- exercise_detail.png       # Egzersiz detayları
+- workout_history.png       # Antrenman geçmişi
+
+## 🍎 Beslenme Ekranları
+- nutrition.png             # Beslenme ana ekranı
+- diet_creation.png         # Diyet planı oluşturma
+- daily_diet_detail.png    # Günlük beslenme detayları
+
+## 📊 Takip Ekranları
+- daily_tracking.png       # Günlük takip ekranı
+
+## 🎥 Video Ekranları
+- video_recording.png       # Video kayıt ekranı
+- video_upload.png          # Video yükleme ekranı
+
+## 📝 Kullanım Talimatları
+
+1. Uygulamayı çalıştırın
+2. Her ekran için screenshot alın
+3. Dosyaları yukarıdaki isimlerle kaydedin
+4. `update_screenshots.bat` dosyasını çalıştırın
+5. README.md otomatik olarak güncellenecek
+
+## 🎨 Screenshot Alma İpuçları
+
+- **Boyut**: 1080x1920 (9:16 aspect ratio)
+- **Format**: PNG (şeffaf arka plan tercih edilir)
+- **Kalite**: Yüksek çözünürlük
+- **İçerik**: Temiz, net görüntüler
+- **Durum**: Uygulamanın en güncel hali
+
+## 🔄 Otomatik Güncelleme
+
+Screenshot'ları ekledikten sonra:
+```bash
+# Windows için
+update_screenshots.bat
+
+# Linux/Mac için
+python3 update_readme.py
+```
+
+Bu komutlar README.md'yi otomatik olarak güncelleyecektir.

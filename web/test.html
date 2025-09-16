@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitSun - API Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4CAF50;
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 1px solid #f44336;
+        }
+
+        .loading {
+            background: rgba(255, 193, 7, 0.3);
+            border: 1px solid #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🏋️ FitSun - API Test</h1>
+
+        <div class="test-section">
+            <h3>🔍 Gemini API Test</h3>
+            <p>Google Gemini AI API'sinin çalışıp çalışmadığını test edin.</p>
+            <button onclick="testGeminiAPI()" id="geminiBtn">Gemini API Test Et</button>
+            <div id="geminiResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔥 Firebase Test</h3>
+            <p>Firebase bağlantısını test edin.</p>
+            <button onclick="testFirebase()" id="firebaseBtn">Firebase Test Et</button>
+            <div id="firebaseResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Genel Bağlantı Test</h3>
+            <p>İnternet bağlantınızı test edin.</p>
+            <button onclick="testConnection()" id="connectionBtn">Bağlantı Test Et</button>
+            <div id="connectionResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Firebase Web SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAy71v91t8DBC9CoNvNM44LvWI-Vn-entY",
+            authDomain: "fitsun-9da11.firebaseapp.com",
+            projectId: "fitsun-9da11",
+            storageBucket: "fitsun-9da11.firebasestorage.app",
+            messagingSenderId: "446925890692",
+            appId: "1:446925890692:web:ef34ae9d1c2f763cd68ed1"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const firestore = firebase.firestore();
+
+        // Gemini API Test
+        async function testGeminiAPI() {
+            const btn = document.getElementById('geminiBtn');
+            const result = document.getElementById('geminiResult');
+
+            btn.disabled = true;
+            btn.textContent = 'Test Ediliyor...';
+            result.style.display = 'block';
+            result.className = 'result loading';
+            result.textContent = '🔍 Gemini API test ediliyor...';
+
+            try {
+                const apiKey = 'AIzaSyD9jLPhBQKZ9_p0XdmSjtZ9y3uTqA5d6-A';
+                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+
+                const response = await fetch(`${apiUrl}?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: 'Merhaba, bu bir test mesajıdır. Sadece "Test başarılı" yaz.'
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.textContent = `✅ Gemini API Çalışıyor!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                } else {
+                    result.className = 'result error';
+                    result.textContent = `❌ Gemini API Hatası!\n\nStatus: ${response.status}\nError: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ Bağlantı Hatası!\n\nError: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Gemini API Test Et';
+            }
+        }
+
+        // Firebase Test
+        async function testFirebase() {
+            const btn = document.getElementById('firebaseBtn');
+            const result = document.getElementById('firebaseResult');
+
+            btn.disabled = true;
+            btn.textContent = 'Test Ediliyor...';
+            result.style.display = 'block';
+            result.className = 'result loading';
+            result.textContent = '🔥 Firebase test ediliyor...';
+
+            try {
+                // Test Firestore connection
+                const testDoc = await firestore.collection('test').doc('connection').set({
+                    timestamp: new Date(),
+                    test: true
+                });
+
+                result.className = 'result success';
+                result.textContent = `✅ Firebase Çalışıyor!\n\nProject ID: ${firebaseConfig.projectId}\nAuth Domain: ${firebaseConfig.authDomain}\nTest document created successfully!`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ Firebase Hatası!\n\nError: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Firebase Test Et';
+            }
+        }
+
+        // Connection Test
+        async function testConnection() {
+            const btn = document.getElementById('connectionBtn');
+            const result = document.getElementById('connectionResult');
+
+            btn.disabled = true;
+            btn.textContent = 'Test Ediliyor...';
+            result.style.display = 'block';
+            result.className = 'result loading';
+            result.textContent = '🌐 Bağlantı test ediliyor...';
+
+            try {
+                const response = await fetch('https://www.google.com', { mode: 'no-cors' });
+                result.className = 'result success';
+                result.textContent = `✅ İnternet Bağlantısı Çalışıyor!\n\nGoogle'a erişim başarılı.`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ Bağlantı Hatası!\n\nError: ${error.message}\nİnternet bağlantınızı kontrol edin.`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Bağlantı Test Et';
+            }
+        }
+    </script>
+</body>
+
+</html>
